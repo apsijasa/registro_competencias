@@ -1,0 +1,536 @@
+ESTRUCTURA DEL PROYECTO
+
+SELECT 
+    nombre,
+    distancia,
+    estilo,
+    piscina,
+    MIN(tiempo) AS mejor_tiempo -- Mejor tiempo
+FROM 
+    TiemposCompetencia
+WHERE 
+    nombre = 'nombre_del_nadador'
+    AND distancia = distancia_seleccionada
+    AND estilo = 'estilo_seleccionado'
+    AND piscina = 'piscina_seleccionada'
+GROUP BY 
+    nombre, distancia, estilo, piscina;
+
+CONFIGURACION BD 
+
+<?php
+class Database {
+    private $host = "localhost";
+    private $db_name = "swim_analysis";
+    private $username = "root";
+    private $password = "";
+    public $conn;
+
+    public function getConnection() {
+        $this->conn = null;
+        try {
+            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
+            $this->conn->exec("set names utf8");
+        } catch (PDOException $exception) {
+            echo "Connection error: " . $exception->getMessage();
+        }
+        return $this->conn;
+    }
+}
+?>
+
+
+MODELO USUARIO
+
+<?php
+class User {
+    private $conn;
+    private $table_name = "Usuarios";
+
+    public $id;
+    public $nombre;
+    public $apellido;
+    public $email;
+    public $password;
+    public $club;
+    public $pais;
+    public $fecha_registro;
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    public function register() {
+        $query = "INSERT INTO " . $this->table_name . " (nombre, apellido, email, password, club, pais) VALUES (:nombre, :apellido, :email, :password, :club, :pais)";
+        $stmt = $this->conn->prepare($query);
+
+        $this->nombre = htmlspecialchars(strip_tags($this->nombre));
+        $this->apellido = htmlspecialchars(strip_tags($this->apellido));
+        $this->email = htmlspecialchars(strip_tags($this->email));
+        $this->password = password_hash($this->password, PASSWORD_BCRYPT);
+        $this->club = htmlspecialchars(strip_tags($this->club));
+        $this->pais = htmlspecialchars(strip_tags($this->pais));
+
+        $stmt->bindParam(":nombre", $this->nombre);
+        $stmt->bindParam(":apellido", $this->apellido);
+        $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":password", $this->password);
+        $stmt->bindParam(":club", $this->club);
+        $stmt->bindParam(":pais", $this->pais);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function login() {
+        $query = "SELECT id, nombre, apellido, email, password, club, pais, fecha_registro FROM " . $this->table_name . " WHERE email = :email LIMIT 0,1";
+        $stmt = $this->conn->prepare($query);
+
+        $this->email = htmlspecialchars(strip_tags($this->email));
+        $stmt->bindParam(":email", $this->email);
+
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row && password_verify($this->password, $row['password'])) {
+            $this->id = $row['id'];
+            $this->nombre = $row['nombre'];
+            $this->apellido = $row['apellido'];
+            $this->club = $row['club'];
+            $this->pais = $row['pais'];
+            $this->fecha_registro = $row['fecha_registro'];
+            return true;
+        }
+        return false;
+    }
+}
+?>
+
+CONTROLADOR USUARIO
+
+<?php
+include_once '../config/database.php';
+include_once '../models/User.php';
+
+class UserController {
+    private $db;
+    private $user;
+
+    public function __construct() {
+        $database = new Database();
+        $this->db = $database->getConnection();
+        $this->user = new User($this->db);
+    }
+
+    public function register($data) {
+        $this->user->nombre = $data['nombre'];
+        $this->user->apellido = $data['apellido'];
+        $this->user->email = $data['email'];
+        $this->user->password = $data['password'];
+        $this->user->club = $data['club'];
+        $this->user->pais = $data['pais'];
+
+        if ($this->user->register()) {
+            return array("message" => "Usuario registrado correctamente.");
+        } else {
+            return array("message" => "No se pudo registrar el usuario.");
+        }
+    }
+
+    public function login($data) {
+        $this->user->email = $data['email'];
+        $this->user->password = $data['password'];
+
+        if ($this->user->login()) {
+            return array("message" => "Login exitoso.", "user" => $this->user);
+        } else {
+            return array("message" => "Login fallido. Email o contraseña incorrectos.");
+        }
+    }
+}
+?>
+
+
+MODELO ANALISIS
+
+<?php
+class Analysis {
+    private $conn;
+    private $table_name = "TiemposCompetencia";
+
+    public $id;
+    public $usuario_id;
+    public $nombre;
+    public $torneo;
+    public $fecha_registro;
+    public $sexo;
+    public $piscina;
+    public $distancia;
+    public $tiempo;
+    public $estilo;
+    public $tiempo_meta;
+    public $seccion_15m;
+    public $seccion_25m;
+    public $seccion_35m;
+    public $seccion_45m;
+    public $ciclo_brazada_15m;
+    public $ciclo_brazada_25m;
+    public $ciclo_brazada_35m;
+    public $ciclo_brazada_45m;
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    public function create() {
+        $query = "INSERT INTO " . $this->table_name . " (usuario_id, nombre, torneo, sexo, piscina, distancia, tiempo, estilo, tiempo_meta, seccion_15m, seccion_25m, seccion_35m, seccion_45m, ciclo_brazada_15m, ciclo_brazada_25m, ciclo_brazada_35m, ciclo_brazada_45m) VALUES (:usuario_id, :nombre, :torneo, :sexo, :piscina, :distancia, :tiempo, :estilo, :tiempo_meta, :seccion_15m, :seccion_25m, :seccion_35m, :seccion_45m, :ciclo_brazada_15m, :ciclo_brazada_25m, :ciclo_brazada_35m, :ciclo_brazada_45m)";
+        $stmt = $this->conn->prepare($query);
+
+        $this->nombre = htmlspecialchars(strip_tags($this->nombre));
+        $this->torneo = htmlspecialchars(strip_tags($this->torneo));
+        $this->sexo = htmlspecialchars(strip_tags($this->sexo));
+        $this->piscina = htmlspecialchars(strip_tags($this->piscina));
+        $this->distancia = htmlspecialchars(strip_tags($this->distancia));
+        $this->tiempo = htmlspecialchars(strip_tags($this->tiempo));
+        $this->estilo = htmlspecialchars(strip_tags($this->estilo));
+        $this->tiempo_meta = htmlspecialchars(strip_tags($this->tiempo_meta));
+        $this->seccion_15m = htmlspecialchars(strip_tags($this->seccion_15m));
+        $this->seccion_25m = htmlspecialchars(strip_tags($this->seccion_25m));
+        $this->seccion_35m = htmlspecialchars(strip_tags($this->seccion_35m));
+        $this->seccion_45m = htmlspecialchars(strip_tags($this->seccion_45m));
+        $this->ciclo_brazada_15m = htmlspecialchars(strip_tags($this->ciclo_brazada_15m));
+        $this->ciclo_brazada_25m = htmlspecialchars(strip_tags($this->ciclo_brazada_25m));
+        $this->ciclo_brazada_35m = htmlspecialchars(strip_tags($this->ciclo_brazada_35m));
+        $this->ciclo_brazada_45m = htmlspecialchars(strip_tags($this->ciclo_brazada_45m));
+
+        $stmt->bindParam(":usuario_id", $this->usuario_id);
+        $stmt->bindParam(":nombre", $this->nombre);
+        $stmt->bindParam(":torneo", $this->torneo);
+        $stmt->bindParam(":sexo", $this->sexo);
+        $stmt->bindParam(":piscina", $this->piscina);
+        $stmt->bindParam(":distancia", $this->distancia);
+        $stmt->bindParam(":tiempo", $this->tiempo);
+        $stmt->bindParam(":estilo", $this->estilo);
+        $stmt->bindParam(":tiempo_meta", $this->tiempo_meta);
+        $stmt->bindParam(":seccion_15m", $this->seccion_15m);
+        $stmt->bindParam(":seccion_25m", $this->seccion_25m);
+        $stmt->bindParam(":seccion_35m", $this->seccion_35m);
+        $stmt->bindParam(":seccion_45m", $this->seccion_45m);
+        $stmt->bindParam(":ciclo_brazada_15m", $this->ciclo_brazada_15m);
+        $stmt->bindParam(":ciclo_brazada_25m", $this->ciclo_brazada_25m);
+        $stmt->bindParam(":ciclo_brazada_35m", $this->ciclo_brazada_35m);
+        $stmt->bindParam(":ciclo_brazada_45m", $this->ciclo_brazada_45m);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getAnalysis($nombre, $estilo, $distancia) {
+        $query = "SELECT nombre, estilo, distancia, sexo, MIN(tiempo) AS mejor_tiempo, AVG(distancia/TIME_TO_SEC(tiempo)) AS promedio_velocidad, tiempo_meta, TIME_TO_SEC(MIN(tiempo)) - TIME_TO_SEC(tiempo_meta) AS diferencia_tiempo FROM " . $this->table_name . " WHERE nombre = :nombre AND estilo = :estilo AND distancia = :distancia GROUP BY nombre, estilo, distancia, sexo, tiempo_meta";
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(":nombre", $nombre);
+        $stmt->bindParam(":estilo", $estilo);
+        $stmt->bindParam(":distancia", $distancia);
+
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function getBestTime($nombre, $distancia, $estilo, $piscina) {
+        $query = "SELECT nombre, distancia, estilo, piscina, MIN(tiempo) AS mejor_tiempo FROM " . $this->table_name . " WHERE nombre = :nombre AND distancia = :distancia AND estilo = :estilo AND piscina = :piscina GROUP BY nombre, distancia, estilo, piscina";
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(":nombre", $nombre);
+        $stmt->bindParam(":distancia", $distancia);
+        $stmt->bindParam(":estilo", $estilo);
+        $stmt->bindParam(":piscina", $piscina);
+
+        $stmt->execute();
+        return $stmt;
+    }
+}
+?>
+
+
+CONTROLADOR ANALISIS
+
+<?php
+include_once '../config/database.php';
+include_once '../models/Analysis.php';
+
+class AnalysisController {
+    private $db;
+    private $analysis;
+
+    public function __construct() {
+        $database = new Database();
+        $this->db = $database->getConnection();
+        $this->analysis = new Analysis($this->db);
+    }
+
+    public function createAnalysis($data) {
+        $this->analysis->usuario_id = $data['usuario_id'];
+        $this->analysis->nombre = $data['nombre'];
+        $this->analysis->torneo = $data['torneo'];
+        $this->analysis->sexo = $data['sexo'];
+        $this->analysis->piscina = $data['piscina'];
+        $this->analysis->distancia = $data['distancia'];
+        $this->analysis->tiempo = $data['tiempo'];
+        $this->analysis->estilo = $data['estilo'];
+        $this->analysis->tiempo_meta = $data['tiempo_meta'];
+        $this->analysis->seccion_15m = $data['seccion_15m'];
+        $this->analysis->seccion_25m = $data['seccion_25m'];
+        $this->analysis->seccion_35m = $data['seccion_35m'];
+        $this->analysis->seccion_45m = $data['seccion_45m'];
+        $this->analysis->ciclo_brazada_15m = $data['ciclo_brazada_15m'];
+        $this->analysis->ciclo_brazada_25m = $data['ciclo_brazada_25m'];
+        $this->analysis->ciclo_brazada_35m = $data['ciclo_brazada_35m'];
+        $this->analysis->ciclo_brazada_45m = $data['ciclo_brazada_45m'];
+
+        if ($this->analysis->create()) {
+            return array("message" => "Análisis de natación registrado correctamente.");
+        } else {
+            return array("message" => "No se pudo registrar el análisis de natación.");
+        }
+    }
+
+    public function getAnalysis($data) {
+        $nombre = $data['nombre'];
+        $estilo = $data['estilo'];
+        $distancia = $data['distancia'];
+
+        $stmt = $this->analysis->getAnalysis($nombre, $estilo, $distancia);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
+
+    public function getBestTime($data) {
+        $nombre = $data['nombre'];
+        $distancia = $data['distancia'];
+        $estilo = $data['estilo'];
+        $piscina = $data['piscina'];
+
+        $stmt = $this->analysis->getBestTime($nombre, $distancia, $estilo, $piscina);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+}
+?>
+
+
+REGISTRO USUARIO
+
+<?php
+include_once '../controllers/UserController.php';
+
+if ($_POST) {
+    $userController = new UserController();
+    $response = $userController->register($_POST);
+    echo $response['message'];
+}
+?>
+
+<form method="post">
+    <input type="text" name="nombre" placeholder="Nombre" required>
+    <input type="text" name="apellido" placeholder="Apellido" required>
+    <input type="email" name="email" placeholder="Correo Electrónico" required>
+    <input type="password" name="password" placeholder="Contraseña" required>
+    <input type="password" name="confirm_password" placeholder="Confirmar Contraseña" required>
+    <input type="text" name="club" placeholder="Nombre del Club" required>
+    <input type="text" name="pais" placeholder="País" required>
+    <button type="submit">Registrarse</button>
+</form>
+
+
+LOGIN USUARIO
+
+<?php
+include_once '../controllers/UserController.php';
+
+if ($_POST) {
+    $userController = new UserController();
+    $response = $userController->login($_POST);
+    echo $response['message'];
+    if (isset($response['user'])) {
+        // Iniciar sesión, redirigir al dashboard o guardar datos del usuario en sesión
+        session_start();
+        $_SESSION['user_id'] = $response['user']->id;
+        header('Location: dashboard.php');
+        exit;
+    }
+}
+?>
+
+<form method="post">
+    <input type="email" name="email" placeholder="Correo Electrónico" required>
+    <input type="password" name="password" placeholder="Contraseña" required>
+    <button type="submit">Iniciar Sesión</button>
+</form>
+
+
+REGISTRO DE ANALISIS
+
+<?php
+include_once '../controllers/AnalysisController.php';
+session_start();
+
+if ($_POST) {
+    $analysisController = new AnalysisController();
+    $data = $_POST;
+    $data['usuario_id'] = $_SESSION['user_id'];  // Asumiendo que el usuario está autenticado
+    $response = $analysisController->createAnalysis($data);
+    echo $response['message'];
+}
+?>
+
+<form method="post">
+    <input type="text" name="nombre" placeholder="Nombre" required>
+    <input type="text" name="torneo" placeholder="Torneo" required>
+    <input type="date" name="fecha_registro" placeholder="Fecha de Registro" required>
+    <select name="sexo" required>
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+    </select>
+    <input type="text" name="piscina" placeholder="Piscina" required>
+    <input type="number" name="distancia" placeholder="Distancia" required>
+    <input type="text" name="tiempo" placeholder="Tiempo (mm:ss.00)" required>
+    <input type="text" name="estilo" placeholder="Estilo" required>
+    <input type="text" name="tiempo_meta" placeholder="Tiempo Meta (mm:ss.00)" required>
+    <input type="text" name="seccion_15m" placeholder="Tiempo Sección 15m (mm:ss.00)" required>
+    <input type="text" name="seccion_25m" placeholder="Tiempo Sección 25m (mm:ss.00)" required>
+    <input type="text" name="seccion_35m" placeholder="Tiempo Sección 35m (mm:ss.00)" required>
+    <input type="text" name="seccion_45m" placeholder="Tiempo Sección 45m (mm:ss.00)" required>
+    <input type="text" name="ciclo_brazada_15m" placeholder="Ciclo Brazada 15m (mm:ss.00)" required>
+    <input type="text" name="ciclo_brazada_25m" placeholder="Ciclo Brazada 25m (mm:ss.00)" required>
+    <input type="text" name="ciclo_brazada_35m" placeholder="Ciclo Brazada 35m (mm:ss.00)" required>
+    <input type="text" name="ciclo_brazada_45m" placeholder="Ciclo Brazada 45m (mm:ss.00)" required>
+    <button type="submit">Registrar Análisis</button>
+</form>
+
+CONSULTA ANALISIS
+
+<?php
+include_once '../controllers/AnalysisController.php';
+session_start();
+
+if ($_POST) {
+    $analysisController = new AnalysisController();
+    $results = $analysisController->getAnalysis($_POST);
+
+    foreach ($results as $result) {
+        echo "Nombre: " . $result['nombre'] . "<br>";
+        echo "Estilo: " . $result['estilo'] . "<br>";
+        echo "Distancia: " . $result['distancia'] . "<br>";
+        echo "Sexo: " . $result['sexo'] . "<br>";
+        echo "Mejor Tiempo: " . $result['mejor_tiempo'] . "<br>";
+        echo "Promedio de Velocidad: " . $result['promedio_velocidad'] . "<br>";
+        echo "Tiempo Meta: " . $result['tiempo_meta'] . "<br>";
+        echo "Diferencia de Tiempo: " . $result['diferencia_tiempo'] . "<br>";
+        echo "<hr>";
+    }
+}
+?>
+
+<form method="post">
+    <input type="text" name="nombre" placeholder="Nombre" required>
+    <input type="text" name="estilo" placeholder="Estilo" required>
+    <input type="number" name="distancia" placeholder="Distancia" required>
+    <button type="submit">Buscar</button>
+</form>
+
+
+CONSULTA MEJOR TIEMPOS
+
+<?php
+include_once '../controllers/AnalysisController.php';
+session_start();
+
+if ($_POST) {
+    $analysisController = new AnalysisController();
+    $result = $analysisController->getBestTime($_POST);
+
+    if ($result) {
+        echo "Nombre: " . $result['nombre'] . "<br>";
+        echo "Distancia: " . $result['distancia'] . "<br>";
+        echo "Estilo: " . $result['estilo'] . "<br>";
+        echo "Piscina: " . $result['piscina'] . "<br>";
+        echo "Mejor Tiempo: " . $result['mejor_tiempo'] . "<br>";
+    } else {
+        echo "No se encontraron resultados.";
+    }
+}
+?>
+
+<form method="post">
+    <input type="text" name="nombre" placeholder="Nombre" required>
+    <input type="number" name="distancia" placeholder="Distancia" required>
+    <input type="text" name="estilo" placeholder="Estilo" required>
+    <input type="text" name="piscina" placeholder="Piscina" required>
+    <button type="submit">Buscar Mejor Tiempo</button>
+</form>
+
+
+ARCHIVO PRINCIPAL (INDEX.PHP)
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Natación</title>
+</head>
+<body>
+    <h1>Bienvenido al Sistema de Análisis de Natación</h1>
+    <a href="views/register.php">Registrarse</a>
+    <a href="views/login.php">Iniciar Sesión</a>
+    <a href="views/analysis.php">Registrar Análisis</a>
+    <a href="views/analysis_result.php">Consultar Análisis</a>
+    <a href="views/best_time.php">Consultar Mejor Tiempo</a>
+</body>
+</html>
+
+RESETEAR Contraseña
+
+<?php
+if (isset($_POST['submit'])) {
+    // Recibe el correo electrónico del formulario
+    $email = $_POST['email'];
+
+    // Genera una nueva contraseña
+    $new_password = generateRandomPassword();
+
+    // Actualiza la contraseña en la base de datos
+    updatePasswordInDatabase($email, $new_password);
+
+    // Envía la nueva contraseña por correo electrónico (puedes implementar esta parte)
+
+    // Redirige al usuario a una página de éxito
+    header("Location: password_reset_success.php");
+    exit();
+}
+
+// Función para generar una contraseña aleatoria
+function generateRandomPassword() {
+    $length = 10;
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $password = '';
+    for ($i = 0; $i < $length; $i++) {
+        $password .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $password;
+}
+
+// Función para actualizar la contraseña en la base de datos (debes implementar esta función)
+function updatePasswordInDatabase($email, $new_password) {
+    // Aquí debes conectarte a la base de datos y ejecutar una consulta para actualizar la contraseña
+    // Ejemplo:
+    // UPDATE usuarios SET contrasena = 'nueva_contrasena_encriptada' WHERE correo = '$email';
+}
+?>

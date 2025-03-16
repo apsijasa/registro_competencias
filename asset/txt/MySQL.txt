@@ -1,0 +1,99 @@
+TABLA DE USUARIO
+
+CREATE TABLE Usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    club VARCHAR(100) NOT NULL,
+    pais VARCHAR(100) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALMACENAR LA INFORMACION DE LOS Usuarios
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) NOT NULL,
+    contrasena VARCHAR(255) NOT NULL
+);
+
+
+
+TABLA DE SESIONES
+
+CREATE TABLE Sesiones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_fin TIMESTAMP NULL,
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(id)
+);
+
+TABLA TIEMPOS DE COMPETENCIA
+
+CREATE TABLE TiemposCompetencia (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    torneo VARCHAR(100) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sexo ENUM('M', 'F') NOT NULL,
+    piscina VARCHAR(50) NOT NULL,
+    distancia FLOAT NOT NULL, -- Distancia en metros
+    tiempo TIME NOT NULL, -- Tiempo en formato hh:mm:ss.00
+    estilo VARCHAR(50) NOT NULL,
+    tiempo_meta TIME NOT NULL, -- Tiempo meta en formato hh:mm:ss.00
+    seccion_15m TIME, -- Tiempo en formato hh:mm:ss.00
+    seccion_25m TIME, -- Tiempo en formato hh:mm:ss.00
+    seccion_35m TIME, -- Tiempo en formato hh:mm:ss.00
+    seccion_45m TIME, -- Tiempo en formato hh:mm:ss.00
+    ciclo_brazada_15m TIME, -- Tiempo en formato hh:mm:ss.00
+    ciclo_brazada_25m TIME, -- Tiempo en formato hh:mm:ss.00
+    ciclo_brazada_35m TIME, -- Tiempo en formato hh:mm:ss.00
+    ciclo_brazada_45m TIME, -- Tiempo en formato hh:mm:ss.00
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(id)
+);
+
+CONSULTAS PAGINA ¿QUE TAL SI?
+
+SELECT 
+    nombre,
+    estilo,
+    distancia,
+    sexo,
+    MIN(tiempo) AS mejor_tiempo, -- Mejor tiempo
+    AVG(distancia/TIME_TO_SEC(tiempo)) AS promedio_velocidad, -- Promedio de velocidad
+    tiempo_meta, -- Tiempo meta
+    TIME_TO_SEC(MIN(tiempo)) - TIME_TO_SEC(tiempo_meta) AS diferencia_tiempo -- Diferencia de tiempo
+FROM 
+    TiemposCompetencia
+WHERE 
+    nombre = 'nombre_del_nadador'
+    AND estilo = 'estilo_seleccionado'
+    AND distancia = distancia_seleccionada
+GROUP BY 
+    nombre, estilo, distancia, sexo, tiempo_meta;
+
+
+CONSULTAS TIEMPOS meta
+
+SELECT 
+    nombre,
+    distancia,
+    estilo,
+    piscina,
+    MIN(tiempo) AS mejor_tiempo -- Mejor tiempo
+FROM 
+    TiemposCompetencia
+WHERE 
+    nombre = 'nombre_del_nadador'
+    AND distancia = distancia_seleccionada
+    AND estilo = 'estilo_seleccionado'
+    AND piscina = 'piscina_seleccionada'
+GROUP BY 
+    nombre, distancia, estilo, piscina;
+
+

@@ -1,0 +1,473 @@
+<?php include 'session.php'; ?>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWIM ANALYSIS - Tiempo Meta</title>
+    <!-- CSS de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Fuente Poppins de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Cabecera con logo y menú de navegación -->
+    <header class="site-header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg">
+                <div class="navbar-brand-container">
+                    <a class="navbar-brand" href="/what if/index.html">
+                        <i class="fas fa-swimmer"></i> SWIM ANALYSIS
+                    </a>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/what if/index.html">
+                                <i class="fas fa-home"></i> Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/what if/Free Trail.html">
+                                <i class="fas fa-rocket"></i> Prueba Gratuita
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/analysis/index.html">
+                                <i class="fas fa-swimmer"></i> SWIMX TRAINING
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/what if/contacto.html">
+                                <i class="fas fa-envelope"></i> Contacto
+                            </a>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                <i class="fas fa-tools"></i> Servicios
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/what if/Tiempos Competencia.html">
+                                        <i class="fas fa-stopwatch"></i> Registro Tiempos</a>
+                                </li>
+                                <li><a class="dropdown-item" href="/what if/Que tal si.html">
+                                        <i class="fas fa-question-circle"></i> ¿Qué tal si?</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="/what if/Tiempo Meta.html">
+                                        <i class="fas fa-bullseye"></i> Tiempo Meta</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.html">
+                                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Banner pequeño para esta página -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Tiempo Meta</h1>
+            <p>Establece zonas de entrenamiento y objetivos basados en tu rendimiento actual</p>
+        </div>
+    </section>
+
+    <!-- Contenido principal -->
+    <section class="training-zones-section">
+        <div class="container">
+            <div class="training-container">
+                <div class="training-form">
+                    <div class="section-title">
+                        <h2><i class="fas fa-cogs"></i> ¿Cómo Entreno?</h2>
+                    </div>
+                    <div class="form-content">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label for="name">
+                                    <i class="fas fa-user"></i> Nombre:
+                                </label>
+                                <select id="name" class="form-select"></select>
+                            </div>
+                            <div class="form-field">
+                                <label for="Distance">
+                                    <i class="fas fa-ruler-horizontal"></i> Distancia:
+                                </label>
+                                <select id="Distance" class="form-select">
+                                    <option value="50m">50m</option>
+                                    <option value="100m">100m</option>
+                                    <option value="200m">200m</option>
+                                    <option value="400">400m</option>
+                                    <option value="800m">800m</option>
+                                    <option value="1500m">1500m</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="stroke">
+                                    <i class="fas fa-swimming-pool"></i> Estilo:
+                                </label>
+                                <select id="stroke" class="form-select">
+                                    <option value="free">Libre</option>
+                                    <option value="fly">Mariposa</option>
+                                    <option value="backstroke">Espalda</option>
+                                    <option value="breaststroke">Pecho</option>
+                                    <option value="im">Combinado</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="pool">
+                                    <i class="fas fa-water"></i> Piscina:
+                                </label>
+                                <select id="pool" class="form-select">
+                                    <option value="25m">25m</option>
+                                    <option value="25y">25y</option>
+                                    <option value="50m">50m</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="time">
+                                    <i class="fas fa-clock"></i> Tiempo:
+                                </label>
+                                <input type="text" id="time" class="form-control" placeholder="Min:Seg.Cent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="training-results">
+                    <div class="result-section">
+                        <div class="section-title">
+                            <h2><i class="fas fa-chart-line"></i> Zonas de Entrenamiento</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="training-zones-table">
+                                <thead>
+                                    <tr>
+                                        <th>Porcentaje</th>
+                                        <th>95%</th>
+                                        <th>90%</th>
+                                        <th>85%</th>
+                                        <th>80%</th>
+                                        <th>75%</th>
+                                        <th>70%</th>
+                                        <th>65%</th>
+                                        <th>60%</th>
+                                        <th>55%</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Zona Energética</td>
+                                        <td>VO2+</td>
+                                        <td>VO2</td>
+                                        <td>8-7</td>
+                                        <td>VO2</td>
+                                        <td>AT+ to AT</td>
+                                        <td>AT+ to AT</td>
+                                        <td>Aero+</td>
+                                        <td>Aero</td>
+                                        <td>Easy</td>
+                                    </tr>
+                                    <tr>
+                                        <td>RPT</td>
+                                        <td>10-9</td>
+                                        <td>8-7</td>
+                                        <td>7-6</td>
+                                        <td>6-4</td>
+                                        <td>5</td>
+                                        <td>4</td>
+                                        <td>3</td>
+                                        <td>2-1</td>
+                                        <td>1-0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>100 Back Mejor tiempo</td>
+                                        <td>64.87</td>
+                                        <td>68.11</td>
+                                        <td>71.36</td>
+                                        <td>74.60</td>
+                                        <td>77.84</td>
+                                        <td>81.09</td>
+                                        <td>84.33</td>
+                                        <td>87.57</td>
+                                        <td>90.82</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiempo Meta</td>
+                                        <td>61.87</td>
+                                        <td>64.96</td>
+                                        <td>68.06</td>
+                                        <td>71.15</td>
+                                        <td>74.24</td>
+                                        <td>77.34</td>
+                                        <td>80.43</td>
+                                        <td>83.52</td>
+                                        <td>86.62</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="distance-tables" id="distance-tables-container">
+                <!-- Las tablas de distancia se generarán dinámicamente aquí -->
+            </div>
+
+            <div class="training-tips">
+                <div class="tip-card">
+                    <div class="tip-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h3>Cómo utilizar las zonas de entrenamiento</h3>
+                        <p>Las zonas de entrenamiento te ayudan a planificar tus sesiones con mayor precisión:</p>
+                        <ul>
+                            <li>Zona VO2+/VO2 (90-95%): Entrenamientos de alta intensidad para mejorar la capacidad
+                                aeróbica máxima</li>
+                            <li>Zonas AT+/AT (75-80%): Trabajo en el umbral anaeróbico para aumentar la resistencia</li>
+                            <li>Zonas Aero+/Aero (60-70%): Desarrolla la base aeróbica con volúmenes más largos</li>
+                            <li>Zona Easy (55%): Recuperación activa y técnica</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pie de página -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <i class="fas fa-swimmer"></i> SWIM ANALYSIS
+                    </div>
+                    <p>Plataforma profesional para el seguimiento y análisis del rendimiento en natación.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h5>Navegación</h5>
+                        <ul>
+                            <li><a href="index.html">Inicio</a></li>
+                            <li><a href="free-trial.html">Prueba Gratuita</a></li>
+                            <li><a href="login.html">Iniciar Sesión</a></li>
+                            <li><a href="register.html">Registrarse</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h5>Servicios</h5>
+                        <ul>
+                            <li><a href="/what if/Tiempos Competencia.html">Registro Tiempos</a></li>
+                            <li><a href="/what if/Que tal si.html">¿Qué tal si?</a></li>
+                            <li><a href="/what if/Tiempo Meta.html">Tiempo Meta</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h5>Contacto</h5>
+                        <ul>
+                            <li><a href="mailto:info@swimanalysis.com">info@swimanalysis.com</a></li>
+                            <li><a href="tel:+34912345678">+34 912 345 678</a></li>
+                            <li>Calle del Deporte 25, Madrid</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="newsletter">
+                    <h5>Suscríbete a nuestro boletín</h5>
+                    <p>Mantente informado sobre actualizaciones y novedades.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Email" required>
+                        <button type="submit" class="btn btn-primary">Suscribirse</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SWIM ANALYSIS. Todos los derechos reservados.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <!-- JavaScript personalizado -->
+    <script>
+        // Función para cargar las tablas según los datos seleccionados
+        function loadTables() {
+            var selectedName = document.getElementById('name').value;
+            var selectedStroke = document.getElementById('stroke').value;
+            var selectedDistance = document.getElementById('Distance').value;
+            var selectedPool = document.getElementById('pool').value;
+
+            // Hacer una solicitud al backend para obtener el tiempo asociado
+            fetch(`/get_time?name=${selectedName}&stroke=${selectedStroke}&distance=${selectedDistance}&pool=${selectedPool}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Mostrar el tiempo obtenido en el campo de entrada de texto
+                    document.getElementById('time').value = data.time;
+                });
+
+            // Definir las distancias y sus respectivas tablas según el estilo de nado seleccionado
+            var distances = [];
+
+            if (selectedStroke === 'free') {
+                distances = ['50m Free', '100m Free', '200m Free', '400m Free', '800m Free', '1500m Free'];
+            } else if (selectedStroke === 'backstroke' || selectedStroke === 'fly' || selectedStroke === 'breaststroke') {
+                distances = ['50m ' + selectedStroke.capitalize(), '100m ' + selectedStroke.capitalize(), '200m ' + selectedStroke.capitalize()];
+            } else if (selectedStroke === 'im') {
+                distances = ['100m IM', '200m IM', '400m IM'];
+            }
+
+            // Eliminar tablas anteriores antes de cargar nuevas tablas
+            var tableContainer = document.getElementById('distance-tables-container');
+            tableContainer.innerHTML = '';
+
+            // Generar las tablas correspondientes a las distancias seleccionadas
+            distances.forEach(function (distance) {
+                var distanceTable = document.createElement('div');
+                distanceTable.className = 'distance-table';
+                distanceTable.innerHTML = `
+                    <div class="section-title">
+                        <h3><i class="fas fa-ruler"></i> ${distance}</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="training-zones-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>5%</th>
+                                    <th>10%</th>
+                                    <th>15%</th>
+                                    <th>20%</th>
+                                    <th>25%</th>
+                                    <th>30%</th>
+                                    <th>35%</th>
+                                    <th>40%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>100%</th>
+                                    <th>95%</th>
+                                    <th>90%</th>
+                                    <th>85%</th>
+                                    <th>80%</th>
+                                    <th>75%</th>
+                                    <th>70%</th>
+                                    <th>65%</th>
+                                    <th>60%</th>
+                                </tr>
+                                <tr>
+                                    <td>RP</td>
+                                    <td>VO2+</td>
+                                    <td>VO2</td>
+                                    <td>8-7</td>
+                                    <td>VO2</td>
+                                    <td>AT+ to AT</td>
+                                    <td>6-4</td>
+                                    <td>Aero+</td>
+                                    <td>Aero</td>
+                                </tr>
+                                <tr>
+                                    <td>10</td>
+                                    <td>9</td>
+                                    <td>8-7</td>
+                                    <td>7-6</td>
+                                    <td>6-4</td>
+                                    <td>5</td>
+                                    <td>4</td>
+                                    <td>3</td>
+                                    <td>2-1</td>
+                                </tr>
+                                <tr>
+                                    <td>PB</td>
+                                    <td>64.87</td>
+                                    <td>68.11</td>
+                                    <td>71.36</td>
+                                    <td>74.60</td>
+                                    <td>77.84</td>
+                                    <td>81.09</td>
+                                    <td>84.33</td>
+                                    <td>87.57</td>
+                                </tr>
+                                <tr>
+                                    <td>TT</td>
+                                    <td>61.87</td>
+                                    <td>64.96</td>
+                                    <td>68.06</td>
+                                    <td>71.15</td>
+                                    <td>74.24</td>
+                                    <td>77.34</td>
+                                    <td>80.43</td>
+                                    <td>83.52</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                tableContainer.appendChild(distanceTable);
+            });
+        }
+
+        // Capitalizar la primera letra de una cadena de texto
+        String.prototype.capitalize = function () {
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        };
+
+        // Cargar las tablas al cambiar el nombre, el estilo, la distancia o el tipo de piscina seleccionados
+        document.addEventListener('DOMContentLoaded', function () {
+            // Simular carga de nadadores (en un caso real, esto se cargaría desde el backend)
+            var nameSelect = document.getElementById('name');
+            const swimmers = ['Ana García', 'Carlos Rodríguez', 'María López', 'Juan Pérez'];
+            swimmers.forEach(function (swimmer) {
+                var option = document.createElement('option');
+                option.value = swimmer.toLowerCase().replace(' ', '_');
+                option.textContent = swimmer;
+                nameSelect.appendChild(option);
+            });
+
+            document.getElementById('name').addEventListener('change', loadTables);
+            document.getElementById('stroke').addEventListener('change', loadTables);
+            document.getElementById('Distance').addEventListener('change', loadTables);
+            document.getElementById('pool').addEventListener('change', loadTables);
+
+            // Cargar las tablas inicialmente
+            loadTables();
+        });
+    </script>
+</body>
+
+</html>
