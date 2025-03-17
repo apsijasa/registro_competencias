@@ -1,19 +1,22 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
 from config import Config
-from models import User, FreeTrialRegistration, ContactMessage
+from extensions import db, csrf
 
-# Inicializar la aplicación Flask
-app = Flask(__name__)
-app.config.from_object(Config)
-
-# Inicializar extensiones
-db = SQLAlchemy(app)
-csrf = CSRFProtect(app)
-
-# Importar rutas después de crear la instancia db para evitar importaciones circulares
-from routes import *
-
-# Importar modelos
-from models import User, FreeTrialRegistration, ContactMessage
+def create_app(config_class=Config):
+    # Crea la aplicación Flask
+    app = Flask(__name__)
+    
+    # Carga la configuración
+    app.config.from_object(config_class)
+    
+    # Inicializa las extensiones
+    db.init_app(app)
+    csrf.init_app(app)
+    
+    # Importa rutas DENTRO de la función para evitar importaciones circulares
+    from routes import init_routes
+    
+    # Inicializa las rutas
+    init_routes(app)
+    
+    return app

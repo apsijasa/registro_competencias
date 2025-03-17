@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash
 from extensions import db
-from .models import User, FreeTrialRegistration, ContactMessage  # Use relative import
+from models import User, FreeTrialRegistration, ContactMessage
 
 def init_routes(app):
     @app.route('/')

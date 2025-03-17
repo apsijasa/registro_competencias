@@ -1,13 +1,13 @@
-from __init__ import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from extensions import db  # Importar db desde extensions.py
 
 class FreeTrialRegistration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)  # Recomendable usar hashing
+    password = db.Column(db.String(128), nullable=False)
     club_name = db.Column(db.String(100))
     country = db.Column(db.String(50))
     card_name = db.Column(db.String(100))
@@ -24,10 +24,6 @@ class ContactMessage(db.Model):
     subject = db.Column(db.String(150))
     message = db.Column(db.Text, nullable=False)
     sent_on = db.Column(db.DateTime, default=datetime.utcnow)
-
-from datetime import datetime
-from __init__ import db
-from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
