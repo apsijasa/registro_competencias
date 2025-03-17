@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}SWIM ANALYSIS - Registro de Tiempos{% endblock %}
+
+{% block content %}
+<!-- Banner pequeño para esta página -->
+<section class="page-header">
+  <div class="container">
+    <h1>Registro de Tiempos</h1>
+    <p>Registra y analiza los tiempos de tus nadadores en entrenamientos y competiciones</p>
+  </div>
+</section>
+
+<!-- Selector de nivel de registro -->
+<section class="level-selection-section">
+  <div class="container">
+    <div class="level-selection-container">
+      <div class="section-title text-center">
+        <h2><i class="fas fa-layer-group"></i> Selecciona tu Nivel de Registro</h2>
+        <p>Elige el nivel de detalle para el registro de tiempos según tus necesidades</p>
+      </div>
+
+      <div class="level-options">
+        <div class="level-card" data-level="basic">
+          <div class="level-icon">
+            <i class="fas fa-stopwatch"></i>
+          </div>
+          <h3>Básico</h3>
+          <p>Registra solo los tiempos de cada vuelta</p>
+          <ul>
+            <li><i class="fas fa-check"></i> Tiempos por vuelta</li>
+            <li><i class="fas fa-check"></i> Tiempo total</li>
+            <li><i class="fas fa-times"></i> Frecuencia de brazada</li>
+            <li><i class="fas fa-times"></i> Métricas avanzadas</li>
+          </ul>
+          <button class="btn btn-outline select-level-btn" data-level="basic">Seleccionar</button>
+        </div>
+
+        <!-- Más opciones de nivel... -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contenido principal - Solo visible después de seleccionar nivel -->
+<section class="time-registration-section" id="registration-form-section" style="display: none;">
+  <div class="container">
+    <div class="time-registration-container">
+      <div class="register-form">
+        <div class="section-title">
+          <h2>
+            <i class="fas fa-pencil-alt"></i>
+            Información del Registro
+            <span class="selected-level-badge" id="selected-level-badge">Básico</span>
+          </h2>
+        </div>
+        <div class="form-content">
+          <form id="data-form" method="POST" action="{{ url_for('guardar_tiempos') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="level" id="level_input" value="">
+            <div class="form-grid">
+              <!-- Campos del formulario... -->
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Más secciones... -->
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Referencias a los elementos del DOM
+    const levelSection = document.querySelector('.level-selection-section');
+    const formSection = document.getElementById('registration-form-section');
+    const basicTimeContainer = document.getElementById('basic-time-container');
+    const advancedTimeContainer = document.getElementById('advanced-time-container');
+    const proLevelMessage = document.getElementById('pro-level-message');
+    const formActions = document.getElementById('form-actions');
+    const levelBadge = document.getElementById('selected-level-badge');
+    const levelInput = document.getElementById('level_input');
+
+    // Configurar botones de selección de nivel
+    document.querySelectorAll('.select-level-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const level = this.getAttribute('data-level');
+        selectLevel(level);
+      });
+    });
+
+    // Función para seleccionar nivel
+    function selectLevel(level) {
+      // Ocultar sección de selección de nivel
+      levelSection.style.display = 'none';
+
+      // Actualizar el badge de nivel seleccionado y el input hidden
+      levelBadge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+      if (levelInput) levelInput.value = level;
+
+      // Lógica según el nivel...
+    }
+
+    // Resto del código JavaScript...
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}SWIM ANALYSIS - Tiempo Meta{% endblock %}
+
+{% block content %}
+<!-- Banner pequeño para esta página -->
+<section class="page-header">
+  <div class="container">
+    <h1>Tiempo Meta</h1>
+    <p>Establece zonas de entrenamiento y objetivos basados en tu rendimiento actual</p>
+  </div>
+</section>
+
+<!-- Contenido principal -->
+<section class="training-zones-section">
+  <div class="container">
+    <div class="training-container">
+      <div class="training-form">
+        <div class="section-title">
+          <h2><i class="fas fa-cogs"></i> ¿Cómo Entreno?</h2>
+        </div>
+        <div class="form-content">
+          <form id="training-zones-form">
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="name">
+                  <i class="fas fa-user"></i> Nombre:
+                </label>
+                <select id="name" class="form-select">
+                  {% for nadador in nadadores %}
+                  <option value="{{ nadador.id }}">{{ nadador.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="Distance">
+                  <i class="fas fa-ruler-horizontal"></i> Distancia:
+                </label>
+                <select id="Distance" class="form-select">
+                  <option value="50m">50m</option>
+                  <option value="100m">100m</option>
+                  <option value="200m">200m</option>
+                  <option value="400">400m</option>
+                  <option value="800m">800m</option>
+                  <option value="1500m">1500m</option>
+                </select>
+              </div>
+              <!-- Más campos de formulario... -->
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="training-results">
+        <div class="result-section">
+          <div class="section-title">
+            <h2><i class="fas fa-chart-line"></i> Zonas de Entrenamiento</h2>
+          </div>
+          <div class="table-responsive">
+            <table class="training-zones-table">
+              <thead>
+                <tr>
+                  <th>Porcentaje</th>
+                  <th>95%</th>
+                  <th>90%</th>
+                  <th>85%</th>
+                  <th>80%</th>
+                  <th>75%</th>
+                  <th>70%</th>
+                  <th>65%</th>
+                  <th>60%</th>
+                  <th>55%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Contenido de la tabla... -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="distance-tables" id="distance-tables-container">
+      <!-- Las tablas de distancia se generarán dinámicamente aquí -->
+    </div>
+
+    <div class="training-tips">
+      <div class="tip-card">
+        <div class="tip-icon">
+          <i class="fas fa-lightbulb"></i>
+        </div>
+        <div class="tip-content">
+          <h3>Cómo utilizar las zonas de entrenamiento</h3>
+          <p>Las zonas de entrenamiento te ayudan a planificar tus sesiones con mayor precisión:</p>
+          <ul>
+            <li>Zona VO2+/VO2 (90-95%): Entrenamientos de alta intensidad para mejorar la capacidad
+              aeróbica máxima</li>
+            <li>Zonas AT+/AT (75-80%): Trabajo en el umbral anaeróbico para aumentar la resistencia</li>
+            <li>Zonas Aero+/Aero (60-70%): Desarrolla la base aeróbica con volúmenes más largos</li>
+            <li>Zona Easy (55%): Recuperación activa y técnica</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Función para cargar las tablas según los datos seleccionados
+    function loadTables() {
+      var selectedName = document.getElementById('name').value;
+      var selectedStroke = document.getElementById('stroke').value;
+      var selectedDistance = document.getElementById('Distance').value;
+      var selectedPool = document.getElementById('pool').value;
+
+      // En una aplicación real, esto sería una petición AJAX
+      // Aquí usamos Fetch API para simular la solicitud
+      fetch(`/api/get_time?name=${selectedName}&stroke=${selectedStroke}&distance=${selectedDistance}&pool=${selectedPool}`)
+        .then(response => response.json())
+        .then(data => {
+          // Actualizar el DOM con los datos recibidos
+          document.getElementById('time').value = data.time;
+          // Más actualizaciones del DOM...
+        })
+        .catch(error => {
+          console.error('Error al obtener datos:', error);
+        });
+
+      // Resto de la función...
+    }
+
+    // Agregar event listeners
+    const nameSelect = document.getElementById('name');
+    if (nameSelect) nameSelect.addEventListener('change', loadTables);
+
+    // Más event listeners...
+
+    // Inicializar la página
+    loadTables();
+  });
+</script>
+{% endblock %}
