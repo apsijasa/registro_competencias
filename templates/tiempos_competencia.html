@@ -21,6 +21,7 @@
       </div>
 
       <div class="level-options">
+        <!-- Opción Básica -->
         <div class="level-card" data-level="basic">
           <div class="level-icon">
             <i class="fas fa-stopwatch"></i>
@@ -36,7 +37,37 @@
           <button class="btn btn-outline select-level-btn" data-level="basic">Seleccionar</button>
         </div>
 
-        <!-- Más opciones de nivel... -->
+        <!-- Opción Pro -->
+        <div class="level-card" data-level="pro">
+          <div class="level-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>Pro</h3>
+          <p>Añade frecuencia de brazada y métricas intermedias</p>
+          <ul>
+            <li><i class="fas fa-check"></i> Tiempos por vuelta</li>
+            <li><i class="fas fa-check"></i> Frecuencia de brazada</li>
+            <li><i class="fas fa-check"></i> Tiempos parciales</li>
+            <li><i class="fas fa-times"></i> Análisis biomecánico</li>
+          </ul>
+          <button class="btn btn-outline select-level-btn" data-level="pro">Seleccionar</button>
+        </div>
+
+        <!-- Opción Elite -->
+        <div class="level-card" data-level="elite">
+          <div class="level-icon">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <h3>Elite</h3>
+          <p>Registro completo con análisis biomecánico detallado</p>
+          <ul>
+            <li><i class="fas fa-check"></i> Todo incluido en Pro</li>
+            <li><i class="fas fa-check"></i> Análisis biomecánico</li>
+            <li><i class="fas fa-check"></i> Eficiencia de nado</li>
+            <li><i class="fas fa-check"></i> Comparativas avanzadas</li>
+          </ul>
+          <button class="btn btn-outline select-level-btn" data-level="elite">Seleccionar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -59,52 +90,428 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="level" id="level_input" value="">
             <div class="form-grid">
-              <!-- Campos del formulario... -->
+              <!-- Información general -->
+              <div class="form-field">
+                <label for="swimmer_name">
+                  <i class="fas fa-user"></i> Nombre del nadador:
+                </label>
+                <input type="text" id="swimmer_name" name="swimmer_name" required>
+              </div>
+              <div class="form-field">
+                <label for="competition">
+                  <i class="fas fa-trophy"></i> Competición/Entrenamiento:
+                </label>
+                <input type="text" id="competition" name="competition" required>
+              </div>
+              <div class="form-field">
+                <label for="date">
+                  <i class="fas fa-calendar"></i> Fecha:
+                </label>
+                <input type="date" id="date" name="date" required>
+              </div>
+              <div class="form-field">
+                <label for="gender">
+                  <i class="fas fa-venus-mars"></i> Género:
+                </label>
+                <select id="gender" name="gender" required>
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="stroke">
+                  <i class="fas fa-swimming-pool"></i> Estilo:
+                </label>
+                <select id="stroke" name="stroke" required>
+                  <option value="free">Libre</option>
+                  <option value="back">Espalda</option>
+                  <option value="breast">Braza</option>
+                  <option value="fly">Mariposa</option>
+                  <option value="im">Estilos</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="distance">
+                  <i class="fas fa-ruler-horizontal"></i> Distancia:
+                </label>
+                <select id="distance" name="distance" required>
+                  <option value="50">50m</option>
+                  <option value="100">100m</option>
+                  <option value="200">200m</option>
+                  <option value="400">400m</option>
+                  <option value="800">800m</option>
+                  <option value="1500">1500m</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="pool_length">
+                  <i class="fas fa-ruler-combined"></i> Longitud de piscina:
+                </label>
+                <select id="pool_length" name="pool_length" required>
+                  <option value="25">25m</option>
+                  <option value="50">50m</option>
+                  <option value="25y">25y</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="time">
+                  <i class="fas fa-stopwatch"></i> Tiempo total:
+                </label>
+                <input type="text" id="time" name="time" placeholder="mm:ss.00" required pattern="^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$">
+              </div>
+            </div>
+
+            <!-- Contenedor para tiempos básicos (visible por defecto) -->
+            <div id="basic-time-container">
+              <h3 class="mt-4">Tiempos por vuelta</h3>
+              <div class="lap-times-container" id="lap-times">
+                <!-- Se generará dinámicamente con JavaScript -->
+              </div>
+            </div>
+
+            <!-- Contenedor para tiempos avanzados (Pro y Elite) -->
+            <div id="advanced-time-container" style="display: none;">
+              <h3 class="mt-4">Tiempos por sección y frecuencia de brazada</h3>
+              <div class="lap-times-container" id="advanced-lap-times">
+                <!-- Se generará dinámicamente con JavaScript -->
+              </div>
+            </div>
+
+            <!-- Contenedor para análisis Elite -->
+            <div id="elite-analysis-container" style="display: none;">
+              <h3 class="mt-4">Análisis biomecánico</h3>
+              <div class="biomechanical-analysis">
+                <!-- Se generará dinámicamente con JavaScript -->
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="form-actions mt-4" id="form-actions">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar Registro
+              </button>
+              <button type="button" class="btn btn-outline" id="cancel-btn">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
             </div>
           </form>
         </div>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Más secciones... -->
+<!-- Mensaje de nivel Pro/Elite (requiere suscripción) -->
+<section id="pro-level-message" style="display: none;">
+  <div class="container">
+    <div class="pro-level-message">
+      <div class="message-card">
+        <div class="message-icon">
+          <i class="fas fa-crown"></i>
+        </div>
+        <h3>Funcionalidad disponible con suscripción</h3>
+        <p>El registro de nivel <span id="premium-level">Pro/Elite</span> está disponible solo para usuarios con suscripción activa.</p>
+        <div class="message-details">
+          <p>Con una suscripción tendrás acceso a:</p>
+          <ul>
+            <li>Análisis biomecánico detallado</li>
+            <li>Frecuencia de brazada y métricas avanzadas</li>
+            <li>Comparativas con nadadores de élite</li>
+            <li>Recomendaciones personalizadas de entrenamiento</li>
+          </ul>
+        </div>
+        <div class="contact-info">
+          <a href="mailto:info@swimanalysis.com" class="contact-email">
+            <i class="fas fa-envelope"></i> info@swimanalysis.com
+          </a>
+        </div>
+        <div class="message-actions">
+          <a href="{{ url_for('free_trial') }}" class="btn btn-primary">
+            <i class="fas fa-rocket"></i> Prueba gratuita 14 días
+          </a>
+          <button class="btn btn-outline" id="back-to-basic-btn">
+            <i class="fas fa-arrow-left"></i> Volver a nivel Básico
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Referencias a los elementos del DOM
-    const levelSection = document.querySelector('.level-selection-section');
-    const formSection = document.getElementById('registration-form-section');
-    const basicTimeContainer = document.getElementById('basic-time-container');
-    const advancedTimeContainer = document.getElementById('advanced-time-container');
-    const proLevelMessage = document.getElementById('pro-level-message');
-    const formActions = document.getElementById('form-actions');
-    const levelBadge = document.getElementById('selected-level-badge');
-    const levelInput = document.getElementById('level_input');
+document.addEventListener('DOMContentLoaded', function () {
+  // Referencias a los elementos del DOM
+  const levelSection = document.querySelector('.level-selection-section');
+  const formSection = document.getElementById('registration-form-section');
+  const basicTimeContainer = document.getElementById('basic-time-container');
+  const advancedTimeContainer = document.getElementById('advanced-time-container');
+  const eliteAnalysisContainer = document.getElementById('elite-analysis-container');
+  const proLevelMessage = document.getElementById('pro-level-message');
+  const formActions = document.getElementById('form-actions');
+  const levelBadge = document.getElementById('selected-level-badge');
+  const levelInput = document.getElementById('level_input');
+  const premiumLevelSpan = document.getElementById('premium-level');
 
-    // Configurar botones de selección de nivel
-    document.querySelectorAll('.select-level-btn').forEach(button => {
-      button.addEventListener('click', function () {
-        const level = this.getAttribute('data-level');
-        selectLevel(level);
-      });
+  // Botones
+  const cancelBtn = document.getElementById('cancel-btn');
+  const backToBasicBtn = document.getElementById('back-to-basic-btn');
+
+  // Configurar botones de selección de nivel
+  document.querySelectorAll('.select-level-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      const level = this.getAttribute('data-level');
+      selectLevel(level);
     });
-
-    // Función para seleccionar nivel
-    function selectLevel(level) {
-      // Ocultar sección de selección de nivel
-      levelSection.style.display = 'none';
-
-      // Actualizar el badge de nivel seleccionado y el input hidden
-      levelBadge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
-      if (levelInput) levelInput.value = level;
-
-      // Lógica según el nivel...
-    }
-
-    // Resto del código JavaScript...
   });
+
+  // Función para seleccionar nivel
+  function selectLevel(level) {
+    // Ocultar sección de selección de nivel
+    levelSection.style.display = 'none';
+
+    // Actualizar el badge de nivel seleccionado y el input hidden
+    levelBadge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+    if (levelInput) levelInput.value = level;
+
+    // Lógica según el nivel
+    if (level === 'basic') {
+      // Mostrar formulario para nivel básico
+      formSection.style.display = 'block';
+      basicTimeContainer.style.display = 'block';
+      advancedTimeContainer.style.display = 'none';
+      eliteAnalysisContainer.style.display = 'none';
+      proLevelMessage.style.display = 'none';
+
+      // Generar campos para tiempos por vuelta
+      generateLapTimeFields();
+    } else {
+      // Para niveles Pro y Elite, mostrar mensaje de suscripción
+      formSection.style.display = 'none';
+      proLevelMessage.style.display = 'block';
+      premiumLevelSpan.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  }
+
+  // Generar campos de tiempo por vuelta según la distancia y longitud de piscina
+  function generateLapTimeFields() {
+    const distance = parseInt(document.getElementById('distance').value);
+    const poolLength = parseInt(document.getElementById('pool_length').value);
+    const lapTimes = document.getElementById('lap-times');
+    
+    // Limpiar contenido previo
+    lapTimes.innerHTML = '';
+    
+    // Calcular número de vueltas
+    const laps = Math.ceil(distance / poolLength);
+    
+    // Crear cuadrícula de campos
+    const grid = document.createElement('div');
+    grid.className = 'form-grid';
+    
+    for (let i = 1; i <= laps; i++) {
+      const fieldContainer = document.createElement('div');
+      fieldContainer.className = 'form-field';
+      
+      const label = document.createElement('label');
+      label.innerHTML = `<i class="fas fa-flag-checkered"></i> Vuelta ${i}:`;
+      label.setAttribute('for', `lap_time_${i}`);
+      
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = `lap_time_${i}`;
+      input.name = `lap_time_${i}`;
+      input.placeholder = 'mm:ss.00';
+      input.pattern = '^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$';
+      
+      fieldContainer.appendChild(label);
+      fieldContainer.appendChild(input);
+      grid.appendChild(fieldContainer);
+    }
+    
+    lapTimes.appendChild(grid);
+  }
+
+  // Generar campos de análisis avanzado para Pro y Elite
+  function generateAdvancedFields() {
+    const distance = parseInt(document.getElementById('distance').value);
+    const poolLength = parseInt(document.getElementById('pool_length').value);
+    const advancedLapTimes = document.getElementById('advanced-lap-times');
+    
+    // Limpiar contenido previo
+    advancedLapTimes.innerHTML = '';
+    
+    // Calcular número de vueltas
+    const laps = Math.ceil(distance / poolLength);
+    
+    // Crear tabla para métricas avanzadas
+    const table = document.createElement('table');
+    table.className = 'data-table';
+    
+    // Encabezado
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    
+    const headers = ['Vuelta', 'Tiempo', 'FR (c/min)', 'DPC (m)', 'Velocidad (m/s)'];
+    headers.forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      headerRow.appendChild(th);
+    });
+    
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // Cuerpo de la tabla
+    const tbody = document.createElement('tbody');
+    
+    for (let i = 1; i <= laps; i++) {
+      const row = document.createElement('tr');
+      
+      // Celda de vuelta
+      const lapCell = document.createElement('td');
+      lapCell.textContent = i;
+      row.appendChild(lapCell);
+      
+      // Celda de tiempo
+      const timeCell = document.createElement('td');
+      const timeInput = document.createElement('input');
+      timeInput.type = 'text';
+      timeInput.name = `adv_lap_time_${i}`;
+      timeInput.placeholder = 'mm:ss.00';
+      timeInput.pattern = '^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$';
+      timeCell.appendChild(timeInput);
+      row.appendChild(timeCell);
+      
+      // Celda de frecuencia de brazada
+      const frCell = document.createElement('td');
+      const frInput = document.createElement('input');
+      frInput.type = 'number';
+      frInput.name = `stroke_rate_${i}`;
+      frInput.min = '20';
+      frInput.max = '100';
+      frCell.appendChild(frInput);
+      row.appendChild(frCell);
+      
+      // Celda de distancia por ciclo
+      const dpcCell = document.createElement('td');
+      const dpcInput = document.createElement('input');
+      dpcInput.type = 'number';
+      dpcInput.name = `stroke_length_${i}`;
+      dpcInput.step = '0.01';
+      dpcInput.min = '1';
+      dpcInput.max = '3';
+      dpcCell.appendChild(dpcInput);
+      row.appendChild(dpcCell);
+      
+      // Celda de velocidad
+      const speedCell = document.createElement('td');
+      const speedSpan = document.createElement('span');
+      speedSpan.id = `speed_${i}`;
+      speedSpan.textContent = '-';
+      speedCell.appendChild(speedSpan);
+      row.appendChild(speedCell);
+      
+      tbody.appendChild(row);
+    }
+    
+    table.appendChild(tbody);
+    advancedLapTimes.appendChild(table);
+    
+    // Configurar cálculos en tiempo real
+    setupAdvancedCalculations();
+  }
+
+  // Configurar cálculos para campos avanzados
+  function setupAdvancedCalculations() {
+    const timeInputs = document.querySelectorAll('[name^="adv_lap_time_"]');
+    const frInputs = document.querySelectorAll('[name^="stroke_rate_"]');
+    const dpcInputs = document.querySelectorAll('[name^="stroke_length_"]');
+    
+    // Función para calcular velocidad
+    const calculateSpeed = (index) => {
+      const timeInput = document.querySelector(`[name="adv_lap_time_${index + 1}"]`);
+      const frInput = document.querySelector(`[name="stroke_rate_${index + 1}"]`);
+      const dpcInput = document.querySelector(`[name="stroke_length_${index + 1}"]`);
+      const speedSpan = document.getElementById(`speed_${index + 1}`);
+      
+      if (timeInput && timeInput.value && dpcInput && dpcInput.value && frInput && frInput.value) {
+        // Convertir tiempo a segundos
+        const timeParts = timeInput.value.split(':');
+        let seconds = 0;
+        
+        if (timeParts.length === 2) {
+          seconds = parseFloat(timeParts[0]) * 60 + parseFloat(timeParts[1]);
+        } else {
+          seconds = parseFloat(timeParts[0]);
+        }
+        
+        if (seconds > 0) {
+          // Cálculo simplificado: velocidad = FR (ciclos/min) * DPC (m/ciclo) / 60
+          const fr = parseFloat(frInput.value);
+          const dpc = parseFloat(dpcInput.value);
+          const speed = (fr * dpc / 60).toFixed(2);
+          
+          speedSpan.textContent = speed;
+        }
+      }
+    };
+    
+    // Configurar event listeners para actualizar velocidad en tiempo real
+    const updateAllSpeeds = () => {
+      for (let i = 0; i < timeInputs.length; i++) {
+        calculateSpeed(i);
+      }
+    };
+    
+    timeInputs.forEach((input, index) => {
+      input.addEventListener('input', () => calculateSpeed(index));
+    });
+    
+    frInputs.forEach((input, index) => {
+      input.addEventListener('input', () => calculateSpeed(index));
+    });
+    
+    dpcInputs.forEach((input, index) => {
+      input.addEventListener('input', () => calculateSpeed(index));
+    });
+  }
+
+  // Event listeners para actualizaciones en tiempo real
+  document.getElementById('distance').addEventListener('change', function() {
+    generateLapTimeFields();
+    if (advancedTimeContainer.style.display !== 'none') {
+      generateAdvancedFields();
+    }
+  });
+  
+  document.getElementById('pool_length').addEventListener('change', function() {
+    generateLapTimeFields();
+    if (advancedTimeContainer.style.display !== 'none') {
+      generateAdvancedFields();
+    }
+  });
+
+  // Event listeners para botones
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      // Volver a mostrar la selección de nivel
+      formSection.style.display = 'none';
+      levelSection.style.display = 'block';
+    });
+  }
+
+  if (backToBasicBtn) {
+    backToBasicBtn.addEventListener('click', function() {
+      // Seleccionar nivel básico
+      selectLevel('basic');
+    });
+  }
+
+  // Inicialización
+  // Generar campos iniciales para tiempos por vuelta
+  setTimeout(generateLapTimeFields, 0);
+});
 </script>
 {% endblock %}
