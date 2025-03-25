@@ -32,7 +32,7 @@
         {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+        <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="form-group">
             <label for="email">
@@ -58,8 +58,8 @@
           </button>
         </form>
         <div class="login-footer">
-          <p>¿No tienes una cuenta? <a href="{{ url_for('register') }}">Regístrate</a></p>
-          <p>O prueba nuestra <a href="{{ url_for('free_trial') }}">versión gratuita</a> sin compromiso</p>
+          <p>¿No tienes una cuenta? <a href="{{ url_for('auth.register') }}">Regístrate</a></p>
+          <p>O prueba nuestra <a href="{{ url_for('auth.free_trial') }}">versión gratuita</a> sin compromiso</p>
         </div>
       </div>
 
