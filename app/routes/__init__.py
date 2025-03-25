@@ -1,22 +1,23 @@
-from flask import Flask
-from config import Config
-from extensions import db, csrf
+"""
+Inicialización y registro de rutas de la aplicación.
+"""
+from flask import Blueprint
 
-def create_app(config_class=Config):
-    # Crea la aplicación Flask
-    app = Flask(__name__)
+# Importar todos los módulos de rutas
+from app.routes.auth import auth_bp
+from app.routes.main import main_bp
+from app.routes.analysis import analysis_bp
+from app.routes.api import api_bp
+
+def init_routes(app):
+    """
+    Registra todos los blueprints de rutas en la aplicación.
     
-    # Carga la configuración
-    app.config.from_object(config_class)
-    
-    # Inicializa las extensiones
-    db.init_app(app)
-    csrf.init_app(app)
-    
-    # Importa rutas DENTRO de la función para evitar importaciones circulares
-    from routes import init_routes
-    
-    # Inicializa las rutas
-    init_routes(app)
-    
-    return app
+    Args:
+        app: Instancia de la aplicación Flask
+    """
+    # Registrar blueprints
+    app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(analysis_bp, url_prefix='/analysis')
+    app.register_blueprint(api_bp, url_prefix='/api')

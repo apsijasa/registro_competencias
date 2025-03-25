@@ -13,7 +13,7 @@
           <p class="hero-subtitle">Plataforma profesional para el análisis, seguimiento y mejora del rendimiento en
             natación</p>
           <div class="hero-actions">
-            <a href="{{ url_for('free_trial') }}" class="btn btn-primary btn-lg">
+            <a href="{{ url_for('auth.free_trial') }}" class="btn btn-primary btn-lg">
               <i class="fas fa-rocket"></i> Comenzar ahora
             </a>
             <a href="#como-funciona" class="btn btn-outline">
@@ -23,7 +23,7 @@
         </div>
         <div class="col-lg-6">
           <div class="hero-image">
-            <img src="{{ url_for('static', filename='images/header_web.jpg') }}" alt="Análisis de natación"
+            <img src="{{ url_for('static', filename='img/header_web.jpg') }}" alt="Análisis de natación"
               class="img-fluid rounded shadow">
           </div>
         </div>
@@ -111,24 +111,115 @@
             <p>Visualiza la evolución del rendimiento con gráficos detallados y comparativas.</p>
           </div>
         </div>
-        <!-- Más feature cards... -->
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-calculator"></i>
+          </div>
+          <div class="feature-content">
+            <h3>Simulación "¿Qué tal si?"</h3>
+            <p>Simula estrategias diferentes para optimizar el rendimiento y los resultados.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-bullseye"></i>
+          </div>
+          <div class="feature-content">
+            <h3>Tiempos Meta</h3>
+            <p>Establece objetivos realistas basados en el análisis de datos históricos.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+          <div class="feature-content">
+            <h3>Seguimiento del Progreso</h3>
+            <p>Monitorea la evolución de los nadadores a lo largo del tiempo con métricas claras.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-users-cog"></i>
+          </div>
+          <div class="feature-content">
+            <h3>Gestión de Equipos</h3>
+            <p>Administra múltiples nadadores y compara su rendimiento en una interfaz intuitiva.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Más secciones... -->
+  <!-- Sección de Beneficios -->
+  <section class="benefits-section">
+    <div class="container">
+      <div class="section-header text-center">
+        <h2>Beneficios para Entrenadores y Nadadores</h2>
+        <p>Descubre cómo SWIM ANALYSIS mejora el rendimiento en el agua</p>
+      </div>
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <div class="benefits-content">
+            <h3>Para Entrenadores</h3>
+            <ul class="benefits-list">
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Análisis detallado del rendimiento de cada nadador</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Comparativas entre diferentes nadadores y equipos</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Herramientas para planificar entrenamientos más efectivos</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Informes personalizados para compartir con nadadores y padres</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="benefits-content">
+            <h3>Para Nadadores</h3>
+            <ul class="benefits-list">
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Seguimiento visual de tu progreso a lo largo del tiempo</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Identificación de fortalezas y áreas de mejora</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Establecimiento de objetivos realistas basados en datos</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Mayor motivación al ver resultados tangibles</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- CTA Final -->
   <section class="cta-section">
     <div class="container">
       <div class="cta-content">
         <h2>Comienza a mejorar el rendimiento de tus nadadores hoy</h2>
-        <p>14 días de prueba gratuita, sin compromiso. Sin necesidad de tarjeta de crédito.</p>
+        <p>14 días de prueba gratuita, sin compromiso</p>
         <div class="cta-actions">
-          <a href="{{ url_for('free_trial') }}" class="btn btn-primary btn-lg">
+          <a href="{{ url_for('auth.free_trial') }}" class="btn btn-primary btn-lg">
             <i class="fas fa-rocket"></i> Comienza tu prueba gratuita
           </a>
-          <a href="{{ url_for('contacto') }}" class="btn btn-outline btn-lg">
+          <a href="{{ url_for('main.contacto') }}" class="btn btn-outline btn-lg">
             <i class="fas fa-calendar-alt"></i> Solicitar demostración
           </a>
         </div>
@@ -136,4 +227,27 @@
     </div>
   </section>
 </main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Scroll suave para enlaces internos
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

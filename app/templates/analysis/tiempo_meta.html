@@ -2,6 +2,11 @@
 
 {% block title %}SWIM ANALYSIS - Tiempo Meta{% endblock %}
 
+{% block extra_head %}
+<!-- Chart.js para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
 {% block content %}
 <!-- Banner pequeño para esta página -->
 <section class="page-header">
@@ -19,7 +24,7 @@
         <div class="section-title">
           <h2><i class="fas fa-cogs"></i> ¿Cómo Entreno?</h2>
         </div>
-        <div class="form-content">
+        <div class="form-content p-4">
           <form id="training-zones-form">
             <div class="form-grid">
               <div class="form-field">
@@ -30,6 +35,18 @@
                   {% for nadador in nadadores %}
                   <option value="{{ nadador.id }}">{{ nadador.nombre }}</option>
                   {% endfor %}
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="stroke">
+                  <i class="fas fa-swimming-pool"></i> Estilo:
+                </label>
+                <select id="stroke" class="form-select">
+                  <option value="free">Libre</option>
+                  <option value="fly">Mariposa</option>
+                  <option value="back">Espalda</option>
+                  <option value="breast">Pecho</option>
+                  <option value="im">Combinado</option>
                 </select>
               </div>
               <div class="form-field">
@@ -45,7 +62,22 @@
                   <option value="1500m">1500m</option>
                 </select>
               </div>
-              <!-- Más campos de formulario... -->
+              <div class="form-field">
+                <label for="pool">
+                  <i class="fas fa-water"></i> Piscina:
+                </label>
+                <select id="pool" class="form-select">
+                  <option value="25m">25m</option>
+                  <option value="50m">50m</option>
+                  <option value="25y">25y</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="time">
+                  <i class="fas fa-stopwatch"></i> Tiempo base:
+                </label>
+                <input type="text" id="time" class="form-control" readonly>
+              </div>
             </div>
           </form>
         </div>
@@ -57,35 +89,99 @@
             <h2><i class="fas fa-chart-line"></i> Zonas de Entrenamiento</h2>
           </div>
           <div class="table-responsive">
-            <table class="training-zones-table">
+            <table class="training-zones-table" id="training-zones-table">
               <thead>
                 <tr>
-                  <th>Porcentaje</th>
-                  <th>95%</th>
-                  <th>90%</th>
-                  <th>85%</th>
-                  <th>80%</th>
-                  <th>75%</th>
-                  <th>70%</th>
-                  <th>65%</th>
-                  <th>60%</th>
-                  <th>55%</th>
+                  <th>Zona</th>
+                  <th>Descripción</th>
+                  <th>%</th>
+                  <th>Tiempo</th>
+                  <th>Tiempo/100m</th>
                 </tr>
               </thead>
-              <tbody>
-                <!-- Contenido de la tabla... -->
+              <tbody id="training-zones-body">
+                <!-- Contenido generado dinámicamente por JavaScript -->
+                <tr>
+                  <td>Z1 - Recuperación</td>
+                  <td>Nado suave, técnica</td>
+                  <td>50-60%</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <td>Z2 - Aeróbico Base</td>
+                  <td>Resistencia aeróbica</td>
+                  <td>60-70%</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <td>Z3 - Aeróbico Intenso</td>
+                  <td>Desarrollo aeróbico</td>
+                  <td>70-80%</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <td>Z4 - Umbral Anaeróbico</td>
+                  <td>Umbral de lactato</td>
+                  <td>80-85%</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <td>Z5 - VO2 Máximo</td>
+                  <td>Potencia aeróbica</td>
+                  <td>85-95%</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <td>Z6 - Velocidad</td>
+                  <td>Velocidad máxima</td>
+                  <td>95-100%</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+        <!-- Gráfico de zonas de entrenamiento -->
+        <div class="chart-card mt-4">
+          <div class="chart-container">
+            <canvas id="zonesChart"></canvas>
           </div>
         </div>
       </div>
     </div>
 
     <div class="distance-tables" id="distance-tables-container">
-      <!-- Las tablas de distancia se generarán dinámicamente aquí -->
+      <!-- Las tablas de fracciones y repeticiones por distancia se generarán dinámicamente aquí -->
+      <div class="section-title mt-4">
+        <h2><i class="fas fa-th"></i> Tiempos por Distancia</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="training-zones-table" id="distance-times-table">
+          <thead>
+            <tr>
+              <th>Distancia</th>
+              <th>Z1<br>50-60%</th>
+              <th>Z2<br>60-70%</th>
+              <th>Z3<br>70-80%</th>
+              <th>Z4<br>80-85%</th>
+              <th>Z5<br>85-95%</th>
+              <th>Z6<br>95-100%</th>
+            </tr>
+          </thead>
+          <tbody id="distance-times-body">
+            <!-- Contenido generado dinámicamente por JavaScript -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div class="training-tips">
+    <div class="training-tips mt-4">
       <div class="tip-card">
         <div class="tip-icon">
           <i class="fas fa-lightbulb"></i>
@@ -94,11 +190,11 @@
           <h3>Cómo utilizar las zonas de entrenamiento</h3>
           <p>Las zonas de entrenamiento te ayudan a planificar tus sesiones con mayor precisión:</p>
           <ul>
-            <li>Zona VO2+/VO2 (90-95%): Entrenamientos de alta intensidad para mejorar la capacidad
-              aeróbica máxima</li>
-            <li>Zonas AT+/AT (75-80%): Trabajo en el umbral anaeróbico para aumentar la resistencia</li>
-            <li>Zonas Aero+/Aero (60-70%): Desarrolla la base aeróbica con volúmenes más largos</li>
-            <li>Zona Easy (55%): Recuperación activa y técnica</li>
+            <li>Zona 5-6 (85-100%): Entrenamientos de alta intensidad para mejorar la capacidad
+              aeróbica máxima y velocidad</li>
+            <li>Zona 4 (80-85%): Trabajo en el umbral anaeróbico para aumentar la resistencia</li>
+            <li>Zonas 2-3 (60-80%): Desarrolla la base aeróbica con volúmenes más largos</li>
+            <li>Zona 1 (50-60%): Recuperación activa y técnica</li>
           </ul>
         </div>
       </div>
@@ -108,39 +204,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Función para cargar las tablas según los datos seleccionados
-    function loadTables() {
-      var selectedName = document.getElementById('name').value;
-      var selectedStroke = document.getElementById('stroke').value;
-      var selectedDistance = document.getElementById('Distance').value;
-      var selectedPool = document.getElementById('pool').value;
-
-      // En una aplicación real, esto sería una petición AJAX
-      // Aquí usamos Fetch API para simular la solicitud
-      fetch(`/api/get_time?name=${selectedName}&stroke=${selectedStroke}&distance=${selectedDistance}&pool=${selectedPool}`)
-        .then(response => response.json())
-        .then(data => {
-          // Actualizar el DOM con los datos recibidos
-          document.getElementById('time').value = data.time;
-          // Más actualizaciones del DOM...
-        })
-        .catch(error => {
-          console.error('Error al obtener datos:', error);
-        });
-
-      // Resto de la función...
-    }
-
-    // Agregar event listeners
-    const nameSelect = document.getElementById('name');
-    if (nameSelect) nameSelect.addEventListener('change', loadTables);
-
-    // Más event listeners...
-
-    // Inicializar la página
-    loadTables();
-  });
-</script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
 {% endblock %}

@@ -83,15 +83,7 @@
           <h2><i class="fas fa-paper-plane"></i> Envíanos un Mensaje</h2>
         </div>
         <div class="form-card">
-          {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-          {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
-          {% endfor %}
-          {% endif %}
-          {% endwith %}
-
-          <form class="contact-form" id="contact-form" method="POST" action="{{ url_for('contacto') }}">
+          <form class="contact-form" id="contact-form" method="POST" action="{{ url_for('main.contacto') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
               <label for="name">
@@ -123,62 +115,110 @@
               <input type="text" id="subject" name="subject" class="form-control" required>
             </div>
 
-            <<div class="form-group">
+            <div class="form-group">
               <label for="message">
                 <i class="fas fa-comment-alt"></i> Mensaje
               </label>
               <textarea id="message" name="message" rows="6" class="form-control" required></textarea>
-        </div>
-        <div class="form-check">
-          <input type="checkbox" id="privacy" name="privacy" class="form-check-input" required>
-          <label for="privacy" class="form-check-label">
-            He leído y acepto la <a href="#">política de privacidad</a>
-          </label>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">
-          <i class="fas fa-paper-plane"></i> Enviar Mensaje
-        </button>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="faq-section">
-    <div class="section-title">
-      <h2><i class="fas fa-question-circle"></i> Preguntas Frecuentes</h2>
-    </div>
-    <div class="faq-grid">
-      <div class="faq-card">
-        <div class="faq-question">
-          <h3><i class="fas fa-angle-right"></i> ¿Cuánto tiempo dura la prueba gratuita?</h3>
-        </div>
-        <div class="faq-answer">
-          <p>La prueba gratuita tiene una duración de 14 días sin ningún compromiso. Durante este
-            periodo podrás acceder a todas las funcionalidades básicas de la plataforma.</p>
+            </div>
+            <div class="form-check">
+              <input type="checkbox" id="privacy" name="privacy" class="form-check-input" required>
+              <label for="privacy" class="form-check-label">
+                He leído y acepto la <a href="#">política de privacidad</a>
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-paper-plane"></i> Enviar Mensaje
+            </button>
+          </form>
         </div>
       </div>
-      <!-- Más preguntas FAQ... -->
     </div>
-  </div>
+    <div class="faq-section">
+      <div class="section-title">
+        <h2><i class="fas fa-question-circle"></i> Preguntas Frecuentes</h2>
+      </div>
+      <div class="faq-grid">
+        <div class="faq-card">
+          <div class="faq-question" data-faq="1">
+            <h3><i class="fas fa-angle-right"></i> ¿Cuánto tiempo dura la prueba gratuita?</h3>
+          </div>
+          <div class="faq-answer" id="faq-answer-1">
+            <p>La prueba gratuita tiene una duración de 14 días sin ningún compromiso. Durante este
+              periodo podrás acceder a todas las funcionalidades básicas de la plataforma.</p>
+          </div>
+        </div>
+        
+        <div class="faq-card">
+          <div class="faq-question" data-faq="2">
+            <h3><i class="fas fa-angle-right"></i> ¿Necesito tarjeta de crédito para la prueba?</h3>
+          </div>
+          <div class="faq-answer" id="faq-answer-2">
+            <p>Sí, solicitamos los datos de tu tarjeta de crédito únicamente con fines de verificación, pero no realizaremos ningún cargo durante el periodo de prueba. Al finalizar la prueba, no se realizará ningún cargo automático.</p>
+          </div>
+        </div>
+        
+        <div class="faq-card">
+          <div class="faq-question" data-faq="3">
+            <h3><i class="fas fa-angle-right"></i> ¿Puedo cancelar mi suscripción en cualquier momento?</h3>
+          </div>
+          <div class="faq-answer" id="faq-answer-3">
+            <p>Sí, puedes cancelar tu suscripción en cualquier momento desde tu panel de usuario o contactando con nuestro servicio de atención al cliente. No aplicamos penalizaciones por cancelación.</p>
+          </div>
+        </div>
+        
+        <div class="faq-card">
+          <div class="faq-question" data-faq="4">
+            <h3><i class="fas fa-angle-right"></i> ¿Cuántos nadadores puedo registrar?</h3>
+          </div>
+          <div class="faq-answer" id="faq-answer-4">
+            <p>Dependiendo del plan elegido, puedes registrar entre 15 y 100 nadadores. En la prueba gratuita, tienes un límite de 15 nadadores. Para equipos más grandes, ofrecemos planes personalizados.</p>
+          </div>
+        </div>
+        
+        <div class="faq-card">
+          <div class="faq-question" data-faq="5">
+            <h3><i class="fas fa-angle-right"></i> ¿Ofrecen descuentos para clubes o federaciones?</h3>
+          </div>
+          <div class="faq-answer" id="faq-answer-5">
+            <p>Sí, contamos con planes especiales para clubes y federaciones con descuentos significativos según el número de nadadores. Contacta con nosotros para obtener una cotización personalizada.</p>
+          </div>
+        </div>
+        
+        <div class="faq-card">
+          <div class="faq-question" data-faq="6">
+            <h3><i class="fas fa-angle-right"></i> ¿Ofrecen soporte técnico?</h3>
+          </div>
+          <div class="faq-answer" id="faq-answer-6">
+            <p>Sí, todos nuestros planes incluyen soporte técnico por email. Los planes premium también incluyen soporte por teléfono y acceso a sesiones de formación personalizadas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}
+
 {% block extra_scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     // Manejo del formulario de contacto
     const contactForm = document.getElementById('contact-form');
 
-    contactForm.addEventListener('submit', function (e) {
-      // La validación del formulario ahora es manejada por Flask
-      // Solo agregamos el código para animaciones aquí
-    });
+    if (contactForm) {
+      contactForm.addEventListener('submit', function (e) {
+        // La validación del formulario ahora es manejada por Flask
+        // Solo agregamos el código para animaciones aquí
+      });
+    }
 
     // Animación para las preguntas frecuentes
     const faqQuestions = document.querySelectorAll('.faq-question');
 
     faqQuestions.forEach(question => {
       question.addEventListener('click', function () {
-        const answer = this.nextElementSibling;
+        const faqId = this.getAttribute('data-faq');
+        const answer = document.getElementById(`faq-answer-${faqId}`);
         const icon = this.querySelector('i');
 
         // Toggle para mostrar/ocultar respuesta
