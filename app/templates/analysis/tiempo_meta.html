@@ -295,6 +295,9 @@
     document.getElementById('Distance').addEventListener('change', fetchTimeAndUpdateZones);
     document.getElementById('pool').addEventListener('change', fetchTimeAndUpdateZones);
     
+    // Variable para controlar si los tiempos han sido inicializados
+    let distanceTimesInitialized = false;
+    
     // Función para obtener el tiempo base y actualizar las zonas
     function fetchTimeAndUpdateZones() {
       const selectedName = document.getElementById('name').value;
@@ -358,11 +361,71 @@
       }
     }
     
-    // Inicializar la página
-    fetchTimeAndUpdateZones();
+    // Función para actualizar zonas de entrenamiento
+    function updateTrainingZones() {
+      const baseTime = document.getElementById('time').value;
+      if (!baseTime) return;
+
+      const baseTimeSeconds = timeToSeconds(baseTime);
+      if (baseTimeSeconds <= 0) return;
+      
+      const zones = [
+        { name: 'Z1 - Recuperación', desc: 'Nado suave, técnica', min: 0.5, max: 0.6 },
+        { name: 'Z2 - Aeróbico Base', desc: 'Resistencia aeróbica', min: 0.6, max: 0.7 },
+        { name: 'Z3 - Aeróbico Intenso', desc: 'Desarrollo aeróbico', min: 0.7, max: 0.8 },
+        { name: 'Z4 - Umbral Anaeróbico', desc: 'Umbral de lactato', min: 0.8, max: 0.85 },
+        { name: 'Z5 - VO2 Máximo', desc: 'Potencia aeróbica', min: 0.85, max: 0.95 },
+        { name: 'Z6 - Velocidad', desc: 'Velocidad máxima', min: 0.95, max: 1.0 }
+      ];
+      
+      const tableBody = document.getElementById('training-zones-body');
+      tableBody.innerHTML = '';
+      
+      const distanceSelect = document.getElementById('Distance');
+      const baseDistance = parseInt(distanceSelect.value);
+      
+      // Calcular tiempo para 100m para mostrar ritmo
+      const paceFor100m = baseTimeSeconds * (100 / baseDistance);
+      
+      zones.forEach(zone => {
+        const row = document.createElement('tr');
+        
+        // Columna de zona
+        const zoneCell = document.createElement('td');
+        zoneCell.textContent = zone.name;
+        row.appendChild(zoneCell);
+        
+        // Columna de descripción
+        const descCell = document.createElement('td');
+        descCell.textContent = zone.desc;
+        row.appendChild(descCell);
+        
+        // Columna de porcentaje
+        const percentCell = document.createElement('td');
+        percentCell.textContent = `${Math.round(zone.min * 100)}-${Math.round(zone.max * 100)}%`;
+        row.appendChild(percentCell);
+        
+        // Columna de tiempo
+        const timeCell = document.createElement('td');
+        const avgIntensity = (zone.min + zone.max) / 2;
+        const zoneTime = baseTimeSeconds / avgIntensity;
+        timeCell.textContent = secondsToTime(zoneTime);
+        row.appendChild(timeCell);
+        
+        // Columna de ritmo por 100m
+        const paceCell = document.createElement('td');
+        const zonePace = paceFor100m / avgIntensity;
+        paceCell.textContent = secondsToTime(zonePace);
+        row.appendChild(paceCell);
+        
+        tableBody.appendChild(row);
+      });
+      
+      // Actualizar también la tabla de distancias
+      generateDistanceTimes();
+    }
     
     // Función para generar distancias comunes de entrenamiento
-    let distanceTimesInitialized = false;
     function generateDistanceTimes() {
       const baseTime = document.getElementById('time').value;
       if (!baseTime) return;
@@ -430,11 +493,32 @@
           tableBody.appendChild(row);
         }
       });
+      
+      // Marcar los tiempos relevantes para la distancia actual
+      highlightCurrentDistance(baseDistance);
     }
-
+    
+    // Función para resaltar la fila de la distancia actual
+    function highlightCurrentDistance(baseDistance) {
+      const tableBody = document.getElementById('distance-times-body');
+      const rows = tableBody.getElementsByTagName('tr');
+      
+      for (let i = 0; i < rows.length; i++) {
+        const distanceCell = rows[i].getElementsByTagName('td')[0];
+        const distanceText = distanceCell.textContent;
+        const distance = parseInt(distanceText);
+        
+        if (distance === baseDistance) {
+          rows[i].classList.add('highlighted-row');
+        } else {
+          rows[i].classList.remove('highlighted-row');
+        }
+      }
+    }
+    
     // Función para convertir tiempo en formato "mm:ss.cc" a segundos
     function timeToSeconds(timeStr) {
-      if (!timeStr || timeStr === '-') return 0;
+      if (!timeStr || timeStr === '-' || timeStr === 'Cargando...') return 0;
 
       let minutes = 0, seconds = 0, centiseconds = 0;
 
@@ -473,67 +557,10 @@
 
       return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
     }
-
-    // Actualizar zonas de entrenamiento cuando cambia el tiempo base
-    function updateTrainingZones() {
-      const baseTime = document.getElementById('time').value;
-      if (!baseTime) return;
-
-      const baseTimeSeconds = timeToSeconds(baseTime);
-      if (baseTimeSeconds <= 0) return;
-      
-      const zones = [
-        { name: 'Z1 - Recuperación', desc: 'Nado suave, técnica', min: 0.5, max: 0.6 },
-        { name: 'Z2 - Aeróbico Base', desc: 'Resistencia aeróbica', min: 0.6, max: 0.7 },
-        { name: 'Z3 - Aeróbico Intenso', desc: 'Desarrollo aeróbico', min: 0.7, max: 0.8 },
-        { name: 'Z4 - Umbral Anaeróbico', desc: 'Umbral de lactato', min: 0.8, max: 0.85 },
-        { name: 'Z5 - VO2 Máximo', desc: 'Potencia aeróbica', min: 0.85, max: 0.95 },
-        { name: 'Z6 - Velocidad', desc: 'Velocidad máxima', min: 0.95, max: 1.0 }
-      ];
-      
-      const tableBody = document.getElementById('training-zones-body');
-      tableBody.innerHTML = '';
-      
-      const distanceSelect = document.getElementById('Distance');
-      const baseDistance = parseInt(distanceSelect.value);
-      
-      // Calcular tiempo para 100m para mostrar ritmo
-      const paceFor100m = baseTimeSeconds * (100 / baseDistance);
-      
-      zones.forEach(zone => {
-        const row = document.createElement('tr');
-        
-        // Columna de zona
-        const zoneCell = document.createElement('td');
-        zoneCell.textContent = zone.name;
-        row.appendChild(zoneCell);
-        
-        // Columna de descripción
-        const descCell = document.createElement('td');
-        descCell.textContent = zone.desc;
-        row.appendChild(descCell);
-        
-        // Columna de porcentaje
-        const percentCell = document.createElement('td');
-        percentCell.textContent = `${Math.round(zone.min * 100)}-${Math.round(zone.max * 100)}%`;
-        row.appendChild(percentCell);
-        
-        // Columna de tiempo
-        const timeCell = document.createElement('td');
-        const avgIntensity = (zone.min + zone.max) / 2;
-        const zoneTime = baseTimeSeconds / avgIntensity;
-        timeCell.textContent = secondsToTime(zoneTime);
-        row.appendChild(timeCell);
-        
-        // Columna de ritmo por 100m
-        const paceCell = document.createElement('td');
-        const zonePace = paceFor100m / avgIntensity;
-        paceCell.textContent = secondsToTime(zonePace);
-        row.appendChild(paceCell);
-        
-        tableBody.appendChild(row);
-      });
-      
-      // Actualizar también la tabla de distancias
-      generateDistanceTimes();
+    
+    // Inicializar la página
+    fetchTimeAndUpdateZones();
+  });
+</script>
+{% endblock %}
     }
