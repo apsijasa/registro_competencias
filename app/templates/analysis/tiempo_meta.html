@@ -54,12 +54,12 @@
                   <i class="fas fa-ruler-horizontal"></i> Distancia:
                 </label>
                 <select id="Distance" class="form-select">
-                  <option value="50m">50m</option>
-                  <option value="100m">100m</option>
-                  <option value="200m">200m</option>
+                  <option value="50">50m</option>
+                  <option value="100">100m</option>
+                  <option value="200">200m</option>
                   <option value="400">400m</option>
-                  <option value="800m">800m</option>
-                  <option value="1500m">1500m</option>
+                  <option value="800">800m</option>
+                  <option value="1500">1500m</option>
                 </select>
               </div>
               <div class="form-field">
@@ -157,7 +157,7 @@
     </div>
 
     <div class="distance-tables" id="distance-tables-container">
-      <!-- Las tablas de fracciones y repeticiones por distancia se generarán dinámicamente aquí -->
+      <!-- Las tablas de fracciones y repeticiones por distancia -->
       <div class="section-title mt-4">
         <h2><i class="fas fa-th"></i> Tiempos por Distancia</h2>
       </div>
@@ -176,6 +176,30 @@
           </thead>
           <tbody id="distance-times-body">
             <!-- Contenido generado dinámicamente por JavaScript -->
+            <tr>
+              <td>25m</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td>50m</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td>100m</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td>200m</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td>400m</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+            <tr>
+              <td>800m</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -205,4 +229,311 @@
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
-{% endblock %}
+
+<script type="text/javascript">
+  // Esta función complementa la inicialización en analysis.js
+  document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar gráfico de zonas
+    const zonesChartCtx = document.getElementById('zonesChart');
+    if (zonesChartCtx) {
+      const zonesChart = new Chart(zonesChartCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6'],
+          datasets: [{
+            label: 'Intensidad (%)',
+            data: [55, 65, 75, 82.5, 90, 97.5],
+            backgroundColor: [
+              'rgba(65, 195, 142, 0.6)',
+              'rgba(123, 200, 92, 0.6)',
+              'rgba(203, 211, 70, 0.6)',
+              'rgba(233, 169, 64, 0.6)',
+              'rgba(225, 126, 74, 0.6)',
+              'rgba(229, 57, 53, 0.6)'
+            ],
+            borderColor: [
+              'rgba(65, 195, 142, 1)',
+              'rgba(123, 200, 92, 1)',
+              'rgba(203, 211, 70, 1)',
+              'rgba(233, 169, 64, 1)',
+              'rgba(225, 126, 74, 1)',
+              'rgba(229, 57, 53, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: 'Intensidad (%)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Intensidad: ${context.raw}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Event listeners para actualizar zonas cuando cambian los valores
+    document.getElementById('name').addEventListener('change', fetchTimeAndUpdateZones);
+    document.getElementById('stroke').addEventListener('change', fetchTimeAndUpdateZones);
+    document.getElementById('Distance').addEventListener('change', fetchTimeAndUpdateZones);
+    document.getElementById('pool').addEventListener('change', fetchTimeAndUpdateZones);
+    
+    // Función para obtener el tiempo base y actualizar las zonas
+    function fetchTimeAndUpdateZones() {
+      const selectedName = document.getElementById('name').value;
+      const selectedStroke = document.getElementById('stroke').value;
+      const selectedDistance = document.getElementById('Distance').value;
+      const selectedPool = document.getElementById('pool').value;
+      
+      // Mostrar un indicador de carga
+      const timeInput = document.getElementById('time');
+      timeInput.value = "Cargando...";
+      
+      fetch(`/api/get_time?name=${selectedName}&stroke=${selectedStroke}&distance=${selectedDistance}&pool=${selectedPool}`)
+        .then(response => response.json())
+        .then(data => {
+          timeInput.value = data.time;
+          
+          // Actualizar zonas y gráfico
+          updateTrainingZones();
+          updateZonesChart();
+          
+          // Si es la primera vez, mostrar un mensaje de éxito
+          if (!distanceTimesInitialized) {
+            distanceTimesInitialized = true;
+            // Opcional: Mostrar algún tipo de notificación de éxito
+            console.log("Datos cargados correctamente");
+          }
+        })
+        .catch(error => {
+          console.error('Error al obtener datos:', error);
+          // En caso de error, usar un tiempo predeterminado
+          timeInput.value = "1:00.00";
+          updateTrainingZones();
+        });
+    }
+    
+    // Función para actualizar el gráfico de zonas
+    function updateZonesChart() {
+      const zonesChartCtx = document.getElementById('zonesChart');
+      const chart = Chart.getChart(zonesChartCtx);
+      
+      if (chart) {
+        // Actualizar datos si el gráfico ya existe
+        const baseTime = document.getElementById('time').value;
+        if (!baseTime) return;
+        
+        const baseTimeSeconds = timeToSeconds(baseTime);
+        if (baseTimeSeconds <= 0) return;
+        
+        const zones = [
+          { min: 0.5, max: 0.6 }, // Z1
+          { min: 0.6, max: 0.7 }, // Z2
+          { min: 0.7, max: 0.8 }, // Z3
+          { min: 0.8, max: 0.85 }, // Z4
+          { min: 0.85, max: 0.95 }, // Z5
+          { min: 0.95, max: 1.0 }  // Z6
+        ];
+        
+        const zoneAvgIntensities = zones.map(zone => ((zone.min + zone.max) / 2) * 100);
+        chart.data.datasets[0].data = zoneAvgIntensities;
+        chart.update();
+      }
+    }
+    
+    // Inicializar la página
+    fetchTimeAndUpdateZones();
+    
+    // Función para generar distancias comunes de entrenamiento
+    let distanceTimesInitialized = false;
+    function generateDistanceTimes() {
+      const baseTime = document.getElementById('time').value;
+      if (!baseTime) return;
+
+      const baseTimeSeconds = timeToSeconds(baseTime);
+      if (baseTimeSeconds <= 0) return;
+
+      const distances = [25, 50, 100, 200, 400, 800];
+      const zones = [
+        { name: 'Z1', min: 0.5, max: 0.6 },
+        { name: 'Z2', min: 0.6, max: 0.7 },
+        { name: 'Z3', min: 0.7, max: 0.8 },
+        { name: 'Z4', min: 0.8, max: 0.85 },
+        { name: 'Z5', min: 0.85, max: 0.95 },
+        { name: 'Z6', min: 0.95, max: 1.0 }
+      ];
+
+      const distanceSelect = document.getElementById('Distance');
+      const baseDistance = parseInt(distanceSelect.value);
+      
+      // Ritmo base por 100m
+      const paceFor100m = baseTimeSeconds * (100 / baseDistance);
+      
+      const tableBody = document.getElementById('distance-times-body');
+      
+      // Actualizar las celdas existentes en lugar de reemplazar toda la tabla
+      const rows = tableBody.getElementsByTagName('tr');
+      
+      distances.forEach((distance, distIndex) => {
+        // Si ya tenemos filas, actualizar las celdas existentes
+        if (rows.length > distIndex) {
+          const cells = rows[distIndex].getElementsByTagName('td');
+          
+          // Actualizar cada zona para esta distancia
+          zones.forEach((zone, zoneIndex) => {
+            if (cells.length > zoneIndex + 1) { // +1 porque la primera celda es la distancia
+              // Calcular tiempo para esta distancia en esta zona
+              const avgIntensity = (zone.min + zone.max) / 2;
+              const timeForDistance = (paceFor100m * distance / 100) / avgIntensity;
+              
+              cells[zoneIndex + 1].textContent = secondsToTime(timeForDistance);
+            }
+          });
+        } else {
+          // Si necesitamos crear nuevas filas (no debería ocurrir con la estructura actual)
+          const row = document.createElement('tr');
+          
+          // Celda de distancia
+          const distanceCell = document.createElement('td');
+          distanceCell.textContent = `${distance}m`;
+          row.appendChild(distanceCell);
+          
+          // Celdas para cada zona
+          zones.forEach(zone => {
+            const zoneCell = document.createElement('td');
+            
+            // Calcular tiempo para esta distancia en esta zona
+            const avgIntensity = (zone.min + zone.max) / 2;
+            const timeForDistance = (paceFor100m * distance / 100) / avgIntensity;
+            
+            zoneCell.textContent = secondsToTime(timeForDistance);
+            row.appendChild(zoneCell);
+          });
+          
+          tableBody.appendChild(row);
+        }
+      });
+    }
+
+    // Función para convertir tiempo en formato "mm:ss.cc" a segundos
+    function timeToSeconds(timeStr) {
+      if (!timeStr || timeStr === '-') return 0;
+
+      let minutes = 0, seconds = 0, centiseconds = 0;
+
+      if (timeStr.includes(':')) {
+        // Formato mm:ss.cc
+        const parts = timeStr.split(':');
+        minutes = parseInt(parts[0]) || 0;
+
+        if (parts[1].includes('.')) {
+          const secParts = parts[1].split('.');
+          seconds = parseInt(secParts[0]) || 0;
+          centiseconds = parseInt(secParts[1]) || 0;
+        } else {
+          seconds = parseInt(parts[1]) || 0;
+        }
+      } else if (timeStr.includes('.')) {
+        // Formato ss.cc
+        const parts = timeStr.split('.');
+        seconds = parseInt(parts[0]) || 0;
+        centiseconds = parseInt(parts[1]) || 0;
+      } else {
+        // Solo segundos
+        seconds = parseInt(timeStr) || 0;
+      }
+
+      return minutes * 60 + seconds + centiseconds / 100;
+    }
+
+    // Función para convertir segundos a formato "mm:ss.cc"
+    function secondsToTime(totalSeconds) {
+      if (isNaN(totalSeconds) || totalSeconds === 0) return '00:00.00';
+
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+      const centiseconds = Math.round((totalSeconds - Math.floor(totalSeconds)) * 100);
+
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
+    }
+
+    // Actualizar zonas de entrenamiento cuando cambia el tiempo base
+    function updateTrainingZones() {
+      const baseTime = document.getElementById('time').value;
+      if (!baseTime) return;
+
+      const baseTimeSeconds = timeToSeconds(baseTime);
+      if (baseTimeSeconds <= 0) return;
+      
+      const zones = [
+        { name: 'Z1 - Recuperación', desc: 'Nado suave, técnica', min: 0.5, max: 0.6 },
+        { name: 'Z2 - Aeróbico Base', desc: 'Resistencia aeróbica', min: 0.6, max: 0.7 },
+        { name: 'Z3 - Aeróbico Intenso', desc: 'Desarrollo aeróbico', min: 0.7, max: 0.8 },
+        { name: 'Z4 - Umbral Anaeróbico', desc: 'Umbral de lactato', min: 0.8, max: 0.85 },
+        { name: 'Z5 - VO2 Máximo', desc: 'Potencia aeróbica', min: 0.85, max: 0.95 },
+        { name: 'Z6 - Velocidad', desc: 'Velocidad máxima', min: 0.95, max: 1.0 }
+      ];
+      
+      const tableBody = document.getElementById('training-zones-body');
+      tableBody.innerHTML = '';
+      
+      const distanceSelect = document.getElementById('Distance');
+      const baseDistance = parseInt(distanceSelect.value);
+      
+      // Calcular tiempo para 100m para mostrar ritmo
+      const paceFor100m = baseTimeSeconds * (100 / baseDistance);
+      
+      zones.forEach(zone => {
+        const row = document.createElement('tr');
+        
+        // Columna de zona
+        const zoneCell = document.createElement('td');
+        zoneCell.textContent = zone.name;
+        row.appendChild(zoneCell);
+        
+        // Columna de descripción
+        const descCell = document.createElement('td');
+        descCell.textContent = zone.desc;
+        row.appendChild(descCell);
+        
+        // Columna de porcentaje
+        const percentCell = document.createElement('td');
+        percentCell.textContent = `${Math.round(zone.min * 100)}-${Math.round(zone.max * 100)}%`;
+        row.appendChild(percentCell);
+        
+        // Columna de tiempo
+        const timeCell = document.createElement('td');
+        const avgIntensity = (zone.min + zone.max) / 2;
+        const zoneTime = baseTimeSeconds / avgIntensity;
+        timeCell.textContent = secondsToTime(zoneTime);
+        row.appendChild(timeCell);
+        
+        // Columna de ritmo por 100m
+        const paceCell = document.createElement('td');
+        const zonePace = paceFor100m / avgIntensity;
+        paceCell.textContent = secondsToTime(zonePace);
+        row.appendChild(paceCell);
+        
+        tableBody.appendChild(row);
+      });
+      
+      // Actualizar también la tabla de distancias
+      generateDistanceTimes();
+    }

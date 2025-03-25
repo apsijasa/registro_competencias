@@ -5,6 +5,61 @@
 {% block extra_head %}
 <!-- Chart.js para gráficos -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Estilos adicionales específicos para esta página -->
+<style>
+  .chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px;
+    width: 100%;
+  }
+  
+  .form-select, .form-control {
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    width: 100%;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+  
+  .form-select:focus, .form-control:focus {
+    border-color: #E53935;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2);
+    outline: none;
+  }
+  
+  .summary-value {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+  }
+  
+  .data-table th, .data-table td {
+    text-align: center;
+    padding: 12px 8px;
+  }
+  
+  .data-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #212121;
+  }
+  
+  .tip-card {
+    background-color: #f9f9f9;
+    border-left: 4px solid #E53935;
+  }
+  
+  @media (max-width: 768px) {
+    .analysis-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -163,10 +218,18 @@
               <div class="table-responsive">
                 <table id="actual-swim-table" class="data-table">
                   <thead id="actual-swim-thead">
-                    <!-- Se genera dinámicamente con JavaScript -->
+                    <tr>
+                      <th>Vuelta</th>
+                      <th>Tiempo</th>
+                      <th>Ritmo</th>
+                      <th>DPC</th>
+                    </tr>
                   </thead>
                   <tbody id="actual-swim-tbody">
                     <!-- Se genera dinámicamente con JavaScript -->
+                    <tr>
+                      <td colspan="4" class="text-center">Cargando datos...</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -187,10 +250,18 @@
               <div class="table-responsive">
                 <table id="ideal-swim-table" class="data-table">
                   <thead id="ideal-swim-thead">
-                    <!-- Se genera dinámicamente con JavaScript -->
+                    <tr>
+                      <th>Vuelta</th>
+                      <th>Tiempo</th>
+                      <th>Ritmo</th>
+                      <th>DPC</th>
+                    </tr>
                   </thead>
                   <tbody id="ideal-swim-tbody">
                     <!-- Se genera dinámicamente con JavaScript -->
+                    <tr>
+                      <td colspan="4" class="text-center">Cargando datos...</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -201,6 +272,24 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Comparación de estrategias -->
+      <div class="strategies-comparison mt-4">
+        <div class="section-title">
+          <h2><i class="fas fa-balance-scale"></i> Comparación de Estrategias</h2>
+        </div>
+        <div class="chart-card">
+          <div class="chart-container">
+            <canvas id="comparisonChart"></canvas>
+          </div>
+        </div>
+        <div class="form-check mt-3 text-center">
+          <input class="form-check-input" type="checkbox" id="showPace" checked>
+          <label class="form-check-label" for="showPace">
+            Mostrar ritmo por 100m
+          </label>
         </div>
       </div>
 
@@ -217,9 +306,21 @@
               <li>Incrementa gradualmente la frecuencia de brazada en los últimos tramos</li>
               <li>Enfócate en mejorar la distancia por ciclo (DPC) en la primera mitad</li>
               <li>Trabaja en mantener la técnica incluso cuando la fatiga aparece</li>
+              <li>Analiza la estrategia de los mejores nadadores de tu categoría</li>
+              <li>Experimenta con diferentes patrones de ritmo en los entrenamientos</li>
             </ul>
           </div>
         </div>
+      </div>
+
+      <!-- Exportar resultados -->
+      <div class="export-section mt-4 text-center">
+        <button class="btn btn-outline" id="export-btn">
+          <i class="fas fa-file-export"></i> Exportar análisis
+        </button>
+        <button class="btn btn-outline" id="share-btn">
+          <i class="fas fa-share-alt"></i> Compartir
+        </button>
       </div>
     </div>
   </div>
@@ -228,4 +329,86 @@
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+  // Script adicional específico para esta página
+  document.addEventListener('DOMContentLoaded', function() {
+    // Inicialización de gráfico de comparación
+    const comparisonCtx = document.getElementById('comparisonChart');
+    if (comparisonCtx) {
+      const comparisonChart = new Chart(comparisonCtx, {
+        type: 'line',
+        data: {
+          labels: ['50m', '100m', '150m', '200m'],
+          datasets: [
+            {
+              label: 'Actual',
+              data: [29.5, 32.1, 33.2, 32.5],
+              borderColor: '#E53935',
+              backgroundColor: 'rgba(229, 57, 53, 0.1)',
+              borderWidth: 2,
+              tension: 0.3
+            },
+            {
+              label: 'Ideal',
+              data: [29.1, 30.8, 31.2, 30.9],
+              borderColor: '#2196F3',
+              backgroundColor: 'rgba(33, 150, 243, 0.1)',
+              borderWidth: 2,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Comparación de tiempos por sección',
+              font: {
+                size: 16
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            y: {
+              reverse: true,
+              title: {
+                display: true,
+                text: 'Tiempo (s)'
+              }
+            }
+          }
+        }
+      });
+      
+      // Toggle para mostrar ritmo o tiempo
+      document.getElementById('showPace').addEventListener('change', function() {
+        if (this.checked) {
+          comparisonChart.data.datasets[0].data = [29.5, 32.1, 33.2, 32.5];
+          comparisonChart.data.datasets[1].data = [29.1, 30.8, 31.2, 30.9];
+          comparisonChart.options.scales.y.title.text = 'Tiempo (s)';
+        } else {
+          comparisonChart.data.datasets[0].data = [1.35, 1.47, 1.52, 1.48];
+          comparisonChart.data.datasets[1].data = [1.32, 1.40, 1.42, 1.41];
+          comparisonChart.options.scales.y.title.text = 'Ritmo (min/100m)';
+        }
+        comparisonChart.update();
+      });
+    }
+    
+    // Botones de exportar y compartir
+    document.getElementById('export-btn').addEventListener('click', function() {
+      alert('Función de exportación: se descargará un PDF con el análisis completo');
+    });
+    
+    document.getElementById('share-btn').addEventListener('click', function() {
+      alert('Función de compartir: se generará un enlace para compartir este análisis');
+    });
+  });
+</script>
 {% endblock %}
