@@ -4,11 +4,13 @@ Rutas para funcionalidades de análisis de natación.
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.extensions import db
 from app.models import SwimTime, SwimLap
+from app.utils.auth import login_required
 
 # Crear blueprint
 analysis_bp = Blueprint('analysis', __name__)
 
 @analysis_bp.route('/que_tal_si')
+@login_required 
 def que_tal_si():
     """Herramienta de simulación '¿Qué tal si?'"""
     # Datos de ejemplo para la demostración
@@ -20,6 +22,7 @@ def que_tal_si():
     return render_template('analysis/que_tal_si.html', nadadores=nadadores)
 
 @analysis_bp.route('/tiempo_meta')
+@login_required
 def tiempo_meta():
     """Herramienta de cálculo de tiempo meta."""
     # Datos de ejemplo para la demostración
@@ -31,11 +34,13 @@ def tiempo_meta():
     return render_template('analysis/tiempo_meta.html', nadadores=nadadores)
 
 @analysis_bp.route('/tiempos_competencia')
+@login_required
 def tiempos_competencia():
     """Página de registro de tiempos de competencia."""
     return render_template('analysis/tiempos_competencia.html')
 
 @analysis_bp.route('/guardar_tiempos', methods=['POST'])
+@login_required
 def guardar_tiempos():
     """Procesa el formulario de registro de tiempos."""
     if 'user_id' not in session:
