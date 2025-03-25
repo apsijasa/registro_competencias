@@ -154,7 +154,10 @@ def login():
                 session.permanent = True
             
             flash('Inicio de sesión exitoso', 'success')
-            return redirect(url_for('main.index'))
+            
+            # Añade esta parte para gestionar la redirección
+            next_url = session.pop('next_url', None)
+            return redirect(next_url or url_for('main.index'))
         else:
             flash('Email o contraseña incorrectos', 'danger')
             return redirect(url_for('auth.login'))

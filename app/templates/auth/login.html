@@ -32,6 +32,13 @@
         {% endif %}
         {% endwith %}
 
+        <!-- Si hay una URL de redirección, mostrar un mensaje -->
+        {% if session.get('next_url') %}
+        <div class="alert alert-info">
+          Inicia sesión para acceder a la página solicitada.
+        </div>
+        {% endif %}
+
         <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="form-group">

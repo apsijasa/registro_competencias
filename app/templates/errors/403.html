@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}403 - Acceso prohibido{% endblock %}
+
+{% block content %}
+<section class="error-section">
+    <div class="container">
+        <div class="error-card">
+            <div class="error-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            <h1>403</h1>
+            <h2>Acceso prohibido</h2>
+            <p>Lo sentimos, no tienes permisos para acceder a esta página.</p>
+            <div class="error-actions">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Volver al inicio
+                </a>
+                <a href="{{ url_for('main.contacto') }}" class="btn btn-outline">
+                    <i class="fas fa-envelope"></i> Contactar con soporte
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}  

@@ -7,16 +7,12 @@ from flask import Flask
 from app.config import Config
 from app.extensions import db, csrf, mail
 from app.utils.security import init_security_headers
+from flask import Flask, render_template
+from app.utils.context import init_template_context
 
 def create_app(config_class=Config):
     """
     Factory function para crear la instancia de la aplicación Flask.
-    
-    Args:
-        config_class: Clase de configuración a utilizar (por defecto Config)
-        
-    Returns:
-        Instancia configurada de la aplicación Flask
     """
     # Crea la aplicación Flask
     app = Flask(__name__)
@@ -32,6 +28,9 @@ def create_app(config_class=Config):
     # Inicializa encabezados de seguridad
     init_security_headers(app)
     
+    # Añade esta línea para inicializar el contexto de plantillas
+    init_template_context(app)
+    
     # Registra los blueprints
     from app.routes import init_routes
     init_routes(app)
@@ -44,6 +43,27 @@ def create_app(config_class=Config):
         db.create_all()
     
     return app
+
+def register_error_handlers(app):
+    """
+    Registra los manejadores para páginas de error.
+    """
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template('errors/500.html'), 500
+    
+    # Añade estos dos manejadores
+    @app.errorhandler(401)
+    def unauthorized(e):
+        return render_template('errors/401.html'), 401
+    
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('errors/403.html'), 403
 
 def register_error_handlers(app):
     """
