@@ -2,6 +2,141 @@
 
 {% block title %}SWIM ANALYSIS - Registro de Tiempos{% endblock %}
 
+{% block extra_head %}
+<style>
+  /* Estilos adicionales para esta página */
+  .level-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  
+  .level-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  
+  .level-card.selected {
+    border: 2px solid #E53935;
+    box-shadow: 0 15px 35px rgba(229, 57, 53, 0.2);
+  }
+  
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+  }
+  
+  .form-field {
+    margin-bottom: 0;
+  }
+  
+  .lap-times-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+  }
+  
+  .lap-summary {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-left: 4px solid #E53935;
+    border-radius: 0 5px 5px 0;
+  }
+  
+  .lap-times-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  
+  .lap-times-table th, 
+  .lap-times-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .lap-times-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #212121;
+  }
+  
+  .lap-times-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .lap-times-table td input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  .lap-times-table td input:focus {
+    border-color: #E53935;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2);
+    outline: none;
+  }
+  
+  /* Iconos de estado */
+  .status-icon {
+    font-size: 1.2rem;
+    margin-right: 5px;
+  }
+  
+  .status-complete {
+    color: #4CAF50;
+  }
+  
+  .status-incomplete {
+    color: #FFC107;
+  }
+  
+  .status-empty {
+    color: #9E9E9E;
+  }
+  
+  /* Animación para mensajes de éxito */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .success-message {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  
+  /* Botón de ayuda flotante */
+  .help-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #E53935;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+  
+  .help-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Banner pequeño para esta página -->
 <section class="page-header">
@@ -78,118 +213,336 @@
   <div class="container">
     <div class="time-registration-container">
       <div class="register-form">
+        <!-- Barra de progreso para el formulario -->
+        <div class="progress mb-4" style="height: 10px;">
+          <div class="progress-bar bg-danger" role="progressbar" style="width: 0%;" 
+               id="form-progress-bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
         <div class="section-title">
           <h2>
             <i class="fas fa-pencil-alt"></i>
-            Información del Registro
+            Registro de Tiempos
             <span class="selected-level-badge" id="selected-level-badge">Básico</span>
           </h2>
+          <p>Completa todos los campos para registrar los tiempos del nadador</p>
         </div>
+        
         <div class="form-content">
-          <form id="data-form" method="POST" action="{{ url_for('guardar_tiempos') }}">
+          <form id="data-form" method="POST" action="{{ url_for('analysis.guardar_tiempos') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="level" id="level_input" value="">
-            <div class="form-grid">
-              <!-- Información general -->
-              <div class="form-field">
-                <label for="swimmer_name">
-                  <i class="fas fa-user"></i> Nombre del nadador:
-                </label>
-                <input type="text" id="swimmer_name" name="swimmer_name" required>
+            <input type="hidden" name="level" id="level_input" value="basic">
+            
+            <!-- Panel con pestañas para organizar el formulario -->
+            <ul class="nav nav-tabs mb-4" id="formTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" 
+                        data-bs-target="#info-content" type="button" role="tab">
+                  <i class="fas fa-info-circle"></i> Información General
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="times-tab" data-bs-toggle="tab" 
+                        data-bs-target="#times-content" type="button" role="tab">
+                  <i class="fas fa-stopwatch"></i> Registro de Tiempos
+                </button>
+              </li>
+            </ul>
+            
+            <div class="tab-content" id="formTabsContent">
+              <!-- Pestaña de Información General -->
+              <div class="tab-pane fade show active" id="info-content" role="tabpanel">
+                <div class="form-grid">
+                  <!-- Información del nadador -->
+                  <div class="form-field">
+                    <label for="swimmer_name">
+                      <i class="fas fa-user"></i> Nombre del nadador:
+                    </label>
+                    <input type="text" id="swimmer_name" name="swimmer_name" class="form-control" required>
+                  </div>
+                  <div class="form-field">
+                    <label for="competition">
+                      <i class="fas fa-trophy"></i> Competición/Entrenamiento:
+                    </label>
+                    <input type="text" id="competition" name="competition" class="form-control" required>
+                  </div>
+                  <div class="form-field">
+                    <label for="date">
+                      <i class="fas fa-calendar"></i> Fecha:
+                    </label>
+                    <input type="date" id="date" name="date" class="form-control" required>
+                  </div>
+                  <div class="form-field">
+                    <label for="gender">
+                      <i class="fas fa-venus-mars"></i> Género:
+                    </label>
+                    <select id="gender" name="gender" class="form-select" required>
+                      <option value="M">Masculino</option>
+                      <option value="F">Femenino</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label for="stroke">
+                      <i class="fas fa-swimming-pool"></i> Estilo:
+                    </label>
+                    <select id="stroke" name="stroke" class="form-select" required>
+                      <option value="free">Libre</option>
+                      <option value="back">Espalda</option>
+                      <option value="breast">Braza</option>
+                      <option value="fly">Mariposa</option>
+                      <option value="im">Estilos</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label for="distance">
+                      <i class="fas fa-ruler-horizontal"></i> Distancia:
+                    </label>
+                    <select id="distance" name="distance" class="form-select" required>
+                      <option value="50">50m</option>
+                      <option value="100">100m</option>
+                      <option value="200">200m</option>
+                      <option value="400">400m</option>
+                      <option value="800">800m</option>
+                      <option value="1500">1500m</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label for="pool_length">
+                      <i class="fas fa-ruler-combined"></i> Longitud de piscina:
+                    </label>
+                    <select id="pool_length" name="pool_length" class="form-select" required>
+                      <option value="25m">25m</option>
+                      <option value="50m">50m</option>
+                      <option value="25y">25y</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label for="time">
+                      <i class="fas fa-stopwatch"></i> Tiempo total:
+                    </label>
+                    <input type="text" id="time" name="time" class="form-control" 
+                           placeholder="mm:ss.00" required 
+                           pattern="^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$">
+                    <small class="form-text text-muted">Formato: mm:ss.00 (ej. 01:23.45)</small>
+                  </div>
+                </div>
+                
+                <!-- Botón para continuar a la siguiente pestaña -->
+                <div class="mt-4 d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline" id="info-back-btn">
+                    <i class="fas fa-arrow-left"></i> Volver
+                  </button>
+                  <button type="button" class="btn btn-primary" id="info-next-btn">
+                    Continuar <i class="fas fa-arrow-right"></i>
+                  </button>
+                </div>
               </div>
-              <div class="form-field">
-                <label for="competition">
-                  <i class="fas fa-trophy"></i> Competición/Entrenamiento:
-                </label>
-                <input type="text" id="competition" name="competition" required>
-              </div>
-              <div class="form-field">
-                <label for="date">
-                  <i class="fas fa-calendar"></i> Fecha:
-                </label>
-                <input type="date" id="date" name="date" required>
-              </div>
-              <div class="form-field">
-                <label for="gender">
-                  <i class="fas fa-venus-mars"></i> Género:
-                </label>
-                <select id="gender" name="gender" required>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="stroke">
-                  <i class="fas fa-swimming-pool"></i> Estilo:
-                </label>
-                <select id="stroke" name="stroke" required>
-                  <option value="free">Libre</option>
-                  <option value="back">Espalda</option>
-                  <option value="breast">Braza</option>
-                  <option value="fly">Mariposa</option>
-                  <option value="im">Estilos</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="distance">
-                  <i class="fas fa-ruler-horizontal"></i> Distancia:
-                </label>
-                <select id="distance" name="distance" required>
-                  <option value="50">50m</option>
-                  <option value="100">100m</option>
-                  <option value="200">200m</option>
-                  <option value="400">400m</option>
-                  <option value="800">800m</option>
-                  <option value="1500">1500m</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="pool_length">
-                  <i class="fas fa-ruler-combined"></i> Longitud de piscina:
-                </label>
-                <select id="pool_length" name="pool_length" required>
-                  <option value="25">25m</option>
-                  <option value="50">50m</option>
-                  <option value="25y">25y</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label for="time">
-                  <i class="fas fa-stopwatch"></i> Tiempo total:
-                </label>
-                <input type="text" id="time" name="time" placeholder="mm:ss.00" required pattern="^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$">
+              
+              <!-- Pestaña de Registro de Tiempos -->
+              <div class="tab-pane fade" id="times-content" role="tabpanel">
+                <!-- Contenedor para tiempos básicos -->
+                <div id="basic-time-container">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3><i class="fas fa-stopwatch"></i> Tiempos por vuelta</h3>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="autoCalculateToggle" checked>
+                      <label class="form-check-label" for="autoCalculateToggle">Calcular automáticamente</label>
+                    </div>
+                  </div>
+                  
+                  <div class="lap-summary mb-4">
+                    <div class="d-flex justify-content-between">
+                      <div>
+                        <strong>Nadador:</strong> <span id="summary-swimmer"></span>
+                      </div>
+                      <div>
+                        <strong>Distancia:</strong> <span id="summary-distance"></span>
+                      </div>
+                      <div>
+                        <strong>Piscina:</strong> <span id="summary-pool"></span>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                      <div>
+                        <strong>Tiempo total:</strong> <span id="summary-time"></span>
+                      </div>
+                      <div>
+                        <strong>Vueltas:</strong> <span id="summary-laps"></span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="lap-times-container" id="lap-times">
+                    <!-- Se generará dinámicamente con JavaScript -->
+                    <div class="text-center py-3">
+                      <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                      </div>
+                      <p class="mt-2">Generando campos de tiempos...</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contenedor para tiempos avanzados (Pro y Elite) -->
+                <div id="advanced-time-container" style="display: none;">
+                  <h3 class="mb-3"><i class="fas fa-chart-line"></i> Tiempos y métricas avanzadas</h3>
+                  
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Sobre la frecuencia de brazada (FR):</strong> Ingresa ciclos por minuto (c/min).
+                    <strong>Sobre la distancia por ciclo (DPC):</strong> Ingresa metros por ciclo (m).
+                  </div>
+                  
+                  <div class="lap-times-container" id="advanced-lap-times">
+                    <!-- Se generará dinámicamente con JavaScript -->
+                    <div class="text-center py-3">
+                      <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                      </div>
+                      <p class="mt-2">Generando campos avanzados...</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contenedor para análisis Elite -->
+                <div id="elite-analysis-container" style="display: none;">
+                  <h3 class="mt-4 mb-3"><i class="fas fa-microscope"></i> Análisis biomecánico</h3>
+                  
+                  <div class="alert alert-primary">
+                    <div class="d-flex">
+                      <div class="me-3">
+                        <i class="fas fa-lightbulb fa-2x"></i>
+                      </div>
+                      <div>
+                        <strong>Sugerencia:</strong> 
+                        Para un análisis biomecánico completo, considera utilizar nuestra aplicación móvil SwimAnalysis para 
+                        grabar y analizar el nado automáticamente. Los datos se sincronizarán con tu cuenta.
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="biomechanical-analysis mt-3">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="card mb-3">
+                          <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-ruler-vertical"></i> Posición del cuerpo</h5>
+                          </div>
+                          <div class="card-body">
+                            <div class="form-field mb-3">
+                              <label for="body_position">Calificación:</label>
+                              <select id="body_position" name="body_position" class="form-select">
+                                <option value="">Seleccionar...</option>
+                                <option value="excellent">Excelente</option>
+                                <option value="good">Buena</option>
+                                <option value="average">Media</option>
+                                <option value="fair">Regular</option>
+                                <option value="poor">Deficiente</option>
+                              </select>
+                            </div>
+                            <div class="form-field">
+                              <label for="body_position_notes">Notas:</label>
+                              <textarea id="body_position_notes" name="body_position_notes" 
+                                        class="form-control" rows="2"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card mb-3">
+                          <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-sync-alt"></i> Rotación</h5>
+                          </div>
+                          <div class="card-body">
+                            <div class="form-field mb-3">
+                              <label for="rotation">Calificación:</label>
+                              <select id="rotation" name="rotation" class="form-select">
+                                <option value="">Seleccionar...</option>
+                                <option value="excellent">Excelente</option>
+                                <option value="good">Buena</option>
+                                <option value="average">Media</option>
+                                <option value="fair">Regular</option>
+                                <option value="poor">Deficiente</option>
+                              </select>
+                            </div>
+                            <div class="form-field">
+                              <label for="rotation_notes">Notas:</label>
+                              <textarea id="rotation_notes" name="rotation_notes" 
+                                        class="form-control" rows="2"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="card mb-3">
+                          <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-hand-paper"></i> Técnica de brazada</h5>
+                          </div>
+                          <div class="card-body">
+                            <div class="form-field mb-3">
+                              <label for="stroke_technique">Calificación:</label>
+                              <select id="stroke_technique" name="stroke_technique" class="form-select">
+                                <option value="">Seleccionar...</option>
+                                <option value="excellent">Excelente</option>
+                                <option value="good">Buena</option>
+                                <option value="average">Media</option>
+                                <option value="fair">Regular</option>
+                                <option value="poor">Deficiente</option>
+                              </select>
+                            </div>
+                            <div class="form-field">
+                              <label for="stroke_technique_notes">Notas:</label>
+                              <textarea id="stroke_technique_notes" name="stroke_technique_notes" 
+                                        class="form-control" rows="2"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card mb-3">
+                          <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-shoe-prints"></i> Técnica de patada</h5>
+                          </div>
+                          <div class="card-body">
+                            <div class="form-field mb-3">
+                              <label for="kick_technique">Calificación:</label>
+                              <select id="kick_technique" name="kick_technique" class="form-select">
+                                <option value="">Seleccionar...</option>
+                                <option value="excellent">Excelente</option>
+                                <option value="good">Buena</option>
+                                <option value="average">Media</option>
+                                <option value="fair">Regular</option>
+                                <option value="poor">Deficiente</option>
+                              </select>
+                            </div>
+                            <div class="form-field">
+                              <label for="kick_technique_notes">Notas:</label>
+                              <textarea id="kick_technique_notes" name="kick_technique_notes" 
+                                        class="form-control" rows="2"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de navegación -->
+                <div class="mt-4 d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline" id="times-back-btn">
+                    <i class="fas fa-arrow-left"></i> Atrás
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar Registro
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- Contenedor para tiempos básicos (visible por defecto) -->
-            <div id="basic-time-container">
-              <h3 class="mt-4">Tiempos por vuelta</h3>
-              <div class="lap-times-container" id="lap-times">
-                <!-- Se generará dinámicamente con JavaScript -->
-              </div>
-            </div>
-
-            <!-- Contenedor para tiempos avanzados (Pro y Elite) -->
-            <div id="advanced-time-container" style="display: none;">
-              <h3 class="mt-4">Tiempos por sección y frecuencia de brazada</h3>
-              <div class="lap-times-container" id="advanced-lap-times">
-                <!-- Se generará dinámicamente con JavaScript -->
-              </div>
-            </div>
-
-            <!-- Contenedor para análisis Elite -->
-            <div id="elite-analysis-container" style="display: none;">
-              <h3 class="mt-4">Análisis biomecánico</h3>
-              <div class="biomechanical-analysis">
-                <!-- Se generará dinámicamente con JavaScript -->
-              </div>
-            </div>
-
-            <!-- Botones de acción -->
+            <!-- Botones de acción fijos al final -->
             <div class="form-actions mt-4" id="form-actions">
-              <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Guardar Registro
-              </button>
               <button type="button" class="btn btn-outline" id="cancel-btn">
                 <i class="fas fa-times"></i> Cancelar
               </button>
@@ -226,7 +579,7 @@
           </a>
         </div>
         <div class="message-actions">
-          <a href="{{ url_for('free_trial') }}" class="btn btn-primary">
+          <a href="{{ url_for('auth.free_trial') }}" class="btn btn-primary">
             <i class="fas fa-rocket"></i> Prueba gratuita 14 días
           </a>
           <button class="btn btn-outline" id="back-to-basic-btn">
@@ -237,26 +590,141 @@
     </div>
   </div>
 </section>
+
+<!-- Botón de ayuda flotante -->
+<div class="help-button" id="help-button" title="Ayuda">
+  <i class="fas fa-question"></i>
+</div>
+
+<!-- Modal de ayuda -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-question-circle"></i> Ayuda para Registro de Tiempos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h5><i class="fas fa-info-circle"></i> Sobre esta página</h5>
+        <p>La página de registro de tiempos te permite documentar los resultados de tus nadadores durante entrenamientos o competiciones. Los datos registrados serán utilizados para análisis posteriores.</p>
+        
+        <h5 class="mt-4"><i class="fas fa-question-circle"></i> Preguntas frecuentes</h5>
+        <div class="accordion" id="faqAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                ¿Cómo registro correctamente los tiempos por vuelta?
+              </button>
+            </h2>
+            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Ingresa los tiempos en formato mm:ss.00 (minutos:segundos.centésimas). Por ejemplo, un minuto, veintitrés segundos y cuarenta y cinco centésimas se escribe como 01:23.45.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                ¿Qué es la frecuencia de brazada y cómo medirla?
+              </button>
+            </h2>
+                          <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  La frecuencia de brazada es el número de ciclos completos de brazada por minuto. Para medirla, cuenta cuántos ciclos completa el nadador en 20 segundos y multiplica por 3 para obtener los ciclos por minuto.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                ¿Para qué sirve la distancia por ciclo (DPC)?
+              </button>
+            </h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                La distancia por ciclo (DPC) indica cuántos metros avanza el nadador en cada ciclo completo de brazada. Es un indicador importante de la eficiencia técnica. Se calcula dividiendo la distancia total entre el número de brazadas.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                ¿Qué diferencia hay entre los niveles Básico, Pro y Elite?
+              </button>
+            </h2>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                <ul>
+                  <li><strong>Básico:</strong> Permite registrar tiempos por vuelta y tiempo total.</li>
+                  <li><strong>Pro:</strong> Añade frecuencia de brazada, distancia por ciclo y velocidad calculada.</li>
+                  <li><strong>Elite:</strong> Incluye análisis biomecánico detallado y recomendaciones técnicas personalizadas.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <a href="{{ url_for('main.contacto') }}" class="btn btn-primary">
+          <i class="fas fa-envelope"></i> Contactar soporte
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // Referencias a los elementos del DOM
+  // Referencias a elementos del DOM
   const levelSection = document.querySelector('.level-selection-section');
   const formSection = document.getElementById('registration-form-section');
   const basicTimeContainer = document.getElementById('basic-time-container');
   const advancedTimeContainer = document.getElementById('advanced-time-container');
   const eliteAnalysisContainer = document.getElementById('elite-analysis-container');
   const proLevelMessage = document.getElementById('pro-level-message');
-  const formActions = document.getElementById('form-actions');
   const levelBadge = document.getElementById('selected-level-badge');
   const levelInput = document.getElementById('level_input');
   const premiumLevelSpan = document.getElementById('premium-level');
+  const formProgressBar = document.getElementById('form-progress-bar');
 
-  // Botones
+  // Referencias a campos del formulario
+  const swimmerNameInput = document.getElementById('swimmer_name');
+  const distanceSelect = document.getElementById('distance');
+  const poolLengthSelect = document.getElementById('pool_length');
+  const timeInput = document.getElementById('time');
+  
+  // Referencias a elementos del resumen
+  const summarySwimmer = document.getElementById('summary-swimmer');
+  const summaryDistance = document.getElementById('summary-distance');
+  const summaryPool = document.getElementById('summary-pool');
+  const summaryTime = document.getElementById('summary-time');
+  const summaryLaps = document.getElementById('summary-laps');
+
+  // Referencias a pestañas
+  const infoTab = document.getElementById('info-tab');
+  const timesTab = document.getElementById('times-tab');
+  const infoContent = document.getElementById('info-content');
+  const timesContent = document.getElementById('times-content');
+  
+  // Botones de navegación
   const cancelBtn = document.getElementById('cancel-btn');
   const backToBasicBtn = document.getElementById('back-to-basic-btn');
+  const infoNextBtn = document.getElementById('info-next-btn');
+  const infoBackBtn = document.getElementById('info-back-btn');
+  const timesBackBtn = document.getElementById('times-back-btn');
+
+  // Botón de ayuda y modal
+  const helpButton = document.getElementById('help-button');
+  const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
+
+  // Variable para almacenar el nivel seleccionado
+  let selectedLevel = 'basic';
+
+  // ======== Configuración de eventos ========
 
   // Configurar botones de selección de nivel
   document.querySelectorAll('.select-level-btn').forEach(button => {
@@ -266,8 +734,98 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // Botón de ayuda
+  helpButton.addEventListener('click', function() {
+    helpModal.show();
+  });
+
+  // Navegación entre pestañas
+  infoNextBtn.addEventListener('click', function() {
+    // Validar campos de la primera pestaña
+    const requiredFields = infoContent.querySelectorAll('input[required], select[required]');
+    let allValid = true;
+    
+    requiredFields.forEach(field => {
+      if (!field.value) {
+        field.classList.add('is-invalid');
+        allValid = false;
+      } else {
+        field.classList.remove('is-invalid');
+      }
+    });
+    
+    if (!allValid) {
+      alert('Por favor, completa todos los campos obligatorios.');
+      return;
+    }
+    
+    // Actualizar resumen
+    updateSummary();
+    
+    // Actualizar barra de progreso
+    formProgressBar.style.width = '50%';
+    formProgressBar.setAttribute('aria-valuenow', '50');
+    
+    // Ir a la siguiente pestaña
+    new bootstrap.Tab(timesTab).show();
+  });
+
+  infoBackBtn.addEventListener('click', function() {
+    formSection.style.display = 'none';
+    levelSection.style.display = 'block';
+  });
+
+  timesBackBtn.addEventListener('click', function() {
+    // Actualizar barra de progreso
+    formProgressBar.style.width = '25%';
+    formProgressBar.setAttribute('aria-valuenow', '25');
+    
+    // Volver a la pestaña anterior
+    new bootstrap.Tab(infoTab).show();
+  });
+
+  // Actualizar campos de tiempo por vuelta cuando cambia la distancia o la piscina
+  distanceSelect.addEventListener('change', function() {
+    generateLapTimeFields();
+    updateSummary();
+  });
+  
+  poolLengthSelect.addEventListener('change', function() {
+    generateLapTimeFields();
+    updateSummary();
+  });
+  
+  timeInput.addEventListener('change', function() {
+    updateSummary();
+  });
+  
+  swimmerNameInput.addEventListener('change', function() {
+    updateSummary();
+  });
+
+  // Botones de cancelar/volver
+  cancelBtn.addEventListener('click', function() {
+    formSection.style.display = 'none';
+    levelSection.style.display = 'block';
+  });
+
+  backToBasicBtn.addEventListener('click', function() {
+    selectLevel('basic');
+  });
+
+  // Establecer validadores personalizados para campos de tiempo
+  document.querySelectorAll('input[pattern]').forEach(input => {
+    input.addEventListener('input', function() {
+      validateTimeInput(this);
+    });
+  });
+
+  // ======== Funciones ========
+
   // Función para seleccionar nivel
   function selectLevel(level) {
+    selectedLevel = level;
+    
     // Ocultar sección de selección de nivel
     levelSection.style.display = 'none';
 
@@ -284,60 +842,201 @@ document.addEventListener('DOMContentLoaded', function () {
       eliteAnalysisContainer.style.display = 'none';
       proLevelMessage.style.display = 'none';
 
+      // Resetear progreso
+      formProgressBar.style.width = '25%';
+      formProgressBar.setAttribute('aria-valuenow', '25');
+      
+      // Volver a la primera pestaña
+      new bootstrap.Tab(infoTab).show();
+      
       // Generar campos para tiempos por vuelta
-      generateLapTimeFields();
+      setTimeout(generateLapTimeFields, 0);
+      
     } else {
       // Para niveles Pro y Elite, mostrar mensaje de suscripción
       formSection.style.display = 'none';
       proLevelMessage.style.display = 'block';
       premiumLevelSpan.textContent = level.charAt(0).toUpperCase() + level.slice(1);
     }
+
+    // Aplicar la clase 'selected' al nivel elegido
+    document.querySelectorAll('.level-card').forEach(card => {
+      if (card.getAttribute('data-level') === level) {
+        card.classList.add('selected');
+      } else {
+        card.classList.remove('selected');
+      }
+    });
+  }
+
+  // Función para actualizar el resumen
+  function updateSummary() {
+    if (summarySwimmer) {
+      summarySwimmer.textContent = swimmerNameInput.value || '---';
+    }
+    
+    if (summaryDistance) {
+      summaryDistance.textContent = distanceSelect.value + 'm' || '---';
+    }
+    
+    if (summaryPool) {
+      summaryPool.textContent = poolLengthSelect.value || '---';
+    }
+    
+    if (summaryTime) {
+      summaryTime.textContent = timeInput.value || '---';
+    }
+    
+    if (summaryLaps) {
+      const distance = parseInt(distanceSelect.value) || 0;
+      const poolLength = parseInt(poolLengthSelect.value.replace(/[^\d]/g, '')) || 25;
+      const laps = Math.ceil(distance / poolLength);
+      summaryLaps.textContent = laps || '---';
+    }
+  }
+
+  // Función para validar campos de tiempo
+  function validateTimeInput(input) {
+    const timePattern = /^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$/;
+    
+    if (input.value && !timePattern.test(input.value)) {
+      input.classList.add('is-invalid');
+    } else {
+      input.classList.remove('is-invalid');
+    }
   }
 
   // Generar campos de tiempo por vuelta según la distancia y longitud de piscina
   function generateLapTimeFields() {
-    const distance = parseInt(document.getElementById('distance').value);
-    const poolLength = parseInt(document.getElementById('pool_length').value);
-    const lapTimes = document.getElementById('lap-times');
+    const distance = parseInt(distanceSelect.value) || 0;
+    const poolLength = parseInt(poolLengthSelect.value.replace(/[^\d]/g, '')) || 25;
+    const lapTimesContainer = document.getElementById('lap-times');
+    
+    if (!lapTimesContainer) return;
     
     // Limpiar contenido previo
-    lapTimes.innerHTML = '';
+    lapTimesContainer.innerHTML = '';
+    
+    // Si los valores no son válidos, mostrar mensaje
+    if (distance <= 0 || poolLength <= 0) {
+      lapTimesContainer.innerHTML = `
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          Por favor, selecciona una distancia y longitud de piscina válidas.
+        </div>
+      `;
+      return;
+    }
     
     // Calcular número de vueltas
     const laps = Math.ceil(distance / poolLength);
     
-    // Crear cuadrícula de campos
-    const grid = document.createElement('div');
-    grid.className = 'form-grid';
+    // Crear tabla para tiempos por vuelta
+    const table = document.createElement('table');
+    table.className = 'lap-times-table';
+    
+    // Encabezado
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    
+    const headers = ['Nº', 'Distancia', 'Tiempo Vuelta', 'Tiempo Acumulado', 'Ritmo (100m)'];
+    headers.forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      headerRow.appendChild(th);
+    });
+    
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // Cuerpo de la tabla
+    const tbody = document.createElement('tbody');
+    
+    let currentDistance = 0;
     
     for (let i = 1; i <= laps; i++) {
-      const fieldContainer = document.createElement('div');
-      fieldContainer.className = 'form-field';
+      const row = document.createElement('tr');
       
-      const label = document.createElement('label');
-      label.innerHTML = `<i class="fas fa-flag-checkered"></i> Vuelta ${i}:`;
-      label.setAttribute('for', `lap_time_${i}`);
+      // Número de vuelta
+      const numCell = document.createElement('td');
+      numCell.textContent = i;
+      row.appendChild(numCell);
       
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.id = `lap_time_${i}`;
-      input.name = `lap_time_${i}`;
-      input.placeholder = 'mm:ss.00';
-      input.pattern = '^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$';
+      // Distancia de esta vuelta
+      currentDistance += (i === laps && distance % poolLength !== 0) ? 
+                          distance % poolLength : poolLength;
+      const distanceCell = document.createElement('td');
+      distanceCell.textContent = currentDistance + 'm';
+      row.appendChild(distanceCell);
       
-      fieldContainer.appendChild(label);
-      fieldContainer.appendChild(input);
-      grid.appendChild(fieldContainer);
+      // Tiempo de la vuelta
+      const lapTimeCell = document.createElement('td');
+      const lapTimeInput = document.createElement('input');
+      lapTimeInput.type = 'text';
+      lapTimeInput.id = `lap_time_${i}`;
+      lapTimeInput.name = `lap_time_${i}`;
+      lapTimeInput.placeholder = 'mm:ss.00';
+      lapTimeInput.pattern = '^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2};
+      lapTimeInput.dataset.lap = i;
+      lapTimeInput.addEventListener('input', function() {
+        validateTimeInput(this);
+        updateAccumulatedTime();
+      });
+      lapTimeCell.appendChild(lapTimeInput);
+      row.appendChild(lapTimeCell);
+      
+      // Tiempo acumulado
+      const accTimeCell = document.createElement('td');
+      const accTimeSpan = document.createElement('span');
+      accTimeSpan.id = `acc_time_${i}`;
+      accTimeSpan.className = 'acc-time';
+      accTimeSpan.textContent = '--:--:--';
+      accTimeCell.appendChild(accTimeSpan);
+      row.appendChild(accTimeCell);
+      
+      // Ritmo por 100m
+      const paceCell = document.createElement('td');
+      const paceSpan = document.createElement('span');
+      paceSpan.id = `pace_${i}`;
+      paceSpan.className = 'pace';
+      paceSpan.textContent = '--:--:--';
+      paceCell.appendChild(paceSpan);
+      row.appendChild(paceCell);
+      
+      tbody.appendChild(row);
     }
     
-    lapTimes.appendChild(grid);
+    table.appendChild(tbody);
+    lapTimesContainer.appendChild(table);
+    
+    // Agregar botón para distribuir tiempos automáticamente
+    const autoDistributeContainer = document.createElement('div');
+    autoDistributeContainer.className = 'text-center mt-4';
+    
+    const autoDistributeBtn = document.createElement('button');
+    autoDistributeBtn.type = 'button';
+    autoDistributeBtn.className = 'btn btn-outline';
+    autoDistributeBtn.innerHTML = '<i class="fas fa-magic"></i> Distribuir tiempos automáticamente';
+    autoDistributeBtn.addEventListener('click', autoDistributeLapTimes);
+    
+    autoDistributeContainer.appendChild(autoDistributeBtn);
+    lapTimesContainer.appendChild(autoDistributeContainer);
+    
+    // Inicializar validación en los nuevos campos
+    document.querySelectorAll('input[pattern]').forEach(input => {
+      input.addEventListener('input', function() {
+        validateTimeInput(this);
+      });
+    });
   }
 
   // Generar campos de análisis avanzado para Pro y Elite
   function generateAdvancedFields() {
-    const distance = parseInt(document.getElementById('distance').value);
-    const poolLength = parseInt(document.getElementById('pool_length').value);
+    const distance = parseInt(distanceSelect.value) || 0;
+    const poolLength = parseInt(poolLengthSelect.value.replace(/[^\d]/g, '')) || 25;
     const advancedLapTimes = document.getElementById('advanced-lap-times');
+    
+    if (!advancedLapTimes) return;
     
     // Limpiar contenido previo
     advancedLapTimes.innerHTML = '';
@@ -347,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Crear tabla para métricas avanzadas
     const table = document.createElement('table');
-    table.className = 'data-table';
+    table.className = 'lap-times-table';
     
     // Encabezado
     const thead = document.createElement('thead');
@@ -380,7 +1079,12 @@ document.addEventListener('DOMContentLoaded', function () {
       timeInput.type = 'text';
       timeInput.name = `adv_lap_time_${i}`;
       timeInput.placeholder = 'mm:ss.00';
-      timeInput.pattern = '^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2}$';
+      timeInput.pattern = '^([0-5]?[0-9]:)?[0-5][0-9].[0-9]{2};
+      timeInput.dataset.lap = i;
+      timeInput.addEventListener('input', function() {
+        validateTimeInput(this);
+        calculateSpeed(i);
+      });
       timeCell.appendChild(timeInput);
       row.appendChild(timeCell);
       
@@ -391,6 +1095,10 @@ document.addEventListener('DOMContentLoaded', function () {
       frInput.name = `stroke_rate_${i}`;
       frInput.min = '20';
       frInput.max = '100';
+      frInput.step = '0.1';
+      frInput.addEventListener('input', function() {
+        calculateSpeed(i);
+      });
       frCell.appendChild(frInput);
       row.appendChild(frCell);
       
@@ -402,6 +1110,9 @@ document.addEventListener('DOMContentLoaded', function () {
       dpcInput.step = '0.01';
       dpcInput.min = '1';
       dpcInput.max = '3';
+      dpcInput.addEventListener('input', function() {
+        calculateSpeed(i);
+      });
       dpcCell.appendChild(dpcInput);
       row.appendChild(dpcCell);
       
@@ -418,100 +1129,320 @@ document.addEventListener('DOMContentLoaded', function () {
     
     table.appendChild(tbody);
     advancedLapTimes.appendChild(table);
-    
-    // Configurar cálculos en tiempo real
-    setupAdvancedCalculations();
   }
 
-  // Configurar cálculos para campos avanzados
-  function setupAdvancedCalculations() {
-    const timeInputs = document.querySelectorAll('[name^="adv_lap_time_"]');
-    const frInputs = document.querySelectorAll('[name^="stroke_rate_"]');
-    const dpcInputs = document.querySelectorAll('[name^="stroke_length_"]');
+  // Función para calcular velocidad en registros avanzados
+  function calculateSpeed(lapIndex) {
+    const timeInput = document.querySelector(`[name="adv_lap_time_${lapIndex}"]`);
+    const frInput = document.querySelector(`[name="stroke_rate_${lapIndex}"]`);
+    const dpcInput = document.querySelector(`[name="stroke_length_${lapIndex}"]`);
+    const speedSpan = document.getElementById(`speed_${lapIndex}`);
     
-    // Función para calcular velocidad
-    const calculateSpeed = (index) => {
-      const timeInput = document.querySelector(`[name="adv_lap_time_${index + 1}"]`);
-      const frInput = document.querySelector(`[name="stroke_rate_${index + 1}"]`);
-      const dpcInput = document.querySelector(`[name="stroke_length_${index + 1}"]`);
-      const speedSpan = document.getElementById(`speed_${index + 1}`);
+    if (!timeInput || !frInput || !dpcInput || !speedSpan) return;
+    
+    const timeValue = timeInput.value;
+    const frValue = parseFloat(frInput.value);
+    const dpcValue = parseFloat(dpcInput.value);
+    
+    if (timeValue && !isNaN(frValue) && !isNaN(dpcValue)) {
+      // Convertir tiempo a segundos
+      const timeSeconds = timeToSeconds(timeValue);
       
-      if (timeInput && timeInput.value && dpcInput && dpcInput.value && frInput && frInput.value) {
-        // Convertir tiempo a segundos
-        const timeParts = timeInput.value.split(':');
-        let seconds = 0;
+      if (timeSeconds > 0) {
+        // Calcular velocidad basada en la longitud de la piscina y el tiempo
+        const poolLength = parseInt(poolLengthSelect.value.replace(/[^\d]/g, '')) || 25;
+        const velocity = (poolLength / timeSeconds).toFixed(2);
         
-        if (timeParts.length === 2) {
-          seconds = parseFloat(timeParts[0]) * 60 + parseFloat(timeParts[1]);
+        // Calcular eficiencia
+        const strokeRatePerSecond = frValue / 60;
+        const theoreticalVelocity = (strokeRatePerSecond * dpcValue).toFixed(2);
+        
+        speedSpan.textContent = velocity + ' m/s';
+        
+        // Destacar visualmente si hay diferencia entre la velocidad teórica y real
+        if (Math.abs(parseFloat(velocity) - parseFloat(theoreticalVelocity)) > 0.1) {
+          speedSpan.classList.add('text-warning');
+          speedSpan.title = `Velocidad teórica: ${theoreticalVelocity} m/s`;
         } else {
-          seconds = parseFloat(timeParts[0]);
+          speedSpan.classList.remove('text-warning');
+          speedSpan.title = '';
+        }
+      }
+    } else {
+      speedSpan.textContent = '-';
+      speedSpan.classList.remove('text-warning');
+      speedSpan.title = '';
+    }
+  }
+
+  // Función para distribuir automáticamente los tiempos por vuelta
+  function autoDistributeLapTimes() {
+    const totalTime = timeInput.value;
+    
+    if (!totalTime) {
+      alert('Por favor, ingresa primero el tiempo total.');
+      return;
+    }
+    
+    const distance = parseInt(distanceSelect.value) || 0;
+    const poolLength = parseInt(poolLengthSelect.value.replace(/[^\d]/g, '')) || 25;
+    const laps = Math.ceil(distance / poolLength);
+    
+    // Convertir tiempo total a segundos
+    const totalTimeSeconds = timeToSeconds(totalTime);
+    
+    // Simular una estrategia realista de carrera
+    // Típicamente, los nadadores son más rápidos en la primera y última vuelta
+    const lapTimes = [];
+    let remainingTime = totalTimeSeconds;
+    
+    for (let i = 1; i <= laps; i++) {
+      let lapTimeSeconds;
+      
+      if (laps <= 2) {
+        // Para distancias cortas, distribuir uniformemente
+        lapTimeSeconds = totalTimeSeconds / laps;
+      } else {
+        // Para distancias más largas, simular una estrategia
+        if (i === 1) {
+          // Primera vuelta más rápida (94% del tiempo medio)
+          lapTimeSeconds = (totalTimeSeconds / laps) * 0.94;
+        } else if (i === laps) {
+          // Última vuelta más rápida (96% del tiempo medio)
+          lapTimeSeconds = (totalTimeSeconds / laps) * 0.96;
+        } else if (i <= Math.ceil(laps / 3)) {
+          // Primer tercio: gradualmente más lento
+          const factor = 0.96 + (i / laps) * 0.08;
+          lapTimeSeconds = (totalTimeSeconds / laps) * factor;
+        } else if (i <= Math.ceil(2 * laps / 3)) {
+          // Segundo tercio: mantener ritmo constante
+          lapTimeSeconds = (totalTimeSeconds / laps) * 1.04;
+        } else {
+          // Tercer tercio: gradualmente más rápido
+          const factor = 1.04 - ((i - Math.ceil(2 * laps / 3)) / (laps - Math.ceil(2 * laps / 3))) * 0.08;
+          lapTimeSeconds = (totalTimeSeconds / laps) * factor;
+        }
+      }
+      
+      // Ajustar para que la suma sea exactamente el tiempo total
+      if (i === laps) {
+        lapTimeSeconds = remainingTime;
+      } else {
+        remainingTime -= lapTimeSeconds;
+      }
+      
+      lapTimes.push(lapTimeSeconds);
+      
+      // Actualizar el input correspondiente
+      const lapInput = document.getElementById(`lap_time_${i}`);
+      if (lapInput) {
+        lapInput.value = secondsToTime(lapTimeSeconds);
+      }
+    }
+    
+    // Actualizar tiempos acumulados y ritmos
+    updateAccumulatedTime();
+  }
+
+  // Función para actualizar tiempos acumulados y ritmos
+  function updateAccumulatedTime() {
+    const distance = parseInt(distanceSelect.value) || 0;
+    const poolLength = parseInt(poolLengthSelect.value.replace(/[^\d]/g, '')) || 25;
+    const laps = Math.ceil(distance / poolLength);
+    
+    let accumulatedTime = 0;
+    let currentDistance = 0;
+    
+    for (let i = 1; i <= laps; i++) {
+      const lapInput = document.getElementById(`lap_time_${i}`);
+      const accTimeSpan = document.getElementById(`acc_time_${i}`);
+      const paceSpan = document.getElementById(`pace_${i}`);
+      
+      if (!lapInput || !accTimeSpan || !paceSpan) continue;
+      
+      if (lapInput.value) {
+        const lapTimeSeconds = timeToSeconds(lapInput.value);
+        accumulatedTime += lapTimeSeconds;
+        
+        // Actualizar tiempo acumulado
+        accTimeSpan.textContent = secondsToTime(accumulatedTime);
+        
+        // Actualizar distancia acumulada
+        currentDistance += (i === laps && distance % poolLength !== 0) ? 
+                           distance % poolLength : poolLength;
+        
+        // Calcular y actualizar ritmo por 100m
+        const pace = (lapTimeSeconds * 100) / poolLength;
+        paceSpan.textContent = secondsToTime(pace);
+      } else {
+        accTimeSpan.textContent = '--:--:--';
+        paceSpan.textContent = '--:--:--';
+      }
+    }
+    
+    // Verificar si el tiempo acumulado coincide con el tiempo total
+    const totalTime = timeInput.value;
+    if (totalTime) {
+      const totalTimeSeconds = timeToSeconds(totalTime);
+      const diff = Math.abs(totalTimeSeconds - accumulatedTime);
+      
+      // Si la diferencia es mayor a 0.5 segundos, mostrar una advertencia
+      if (diff > 0.5) {
+        const formattedDiff = secondsToTime(diff);
+        // Mostrar advertencia solo si todos los tiempos por vuelta están completos
+        let allLapsComplete = true;
+        for (let i = 1; i <= laps; i++) {
+          const lapInput = document.getElementById(`lap_time_${i}`);
+          if (!lapInput || !lapInput.value) {
+            allLapsComplete = false;
+            break;
+          }
         }
         
-        if (seconds > 0) {
-          // Cálculo simplificado: velocidad = FR (ciclos/min) * DPC (m/ciclo) / 60
-          const fr = parseFloat(frInput.value);
-          const dpc = parseFloat(dpcInput.value);
-          const speed = (fr * dpc / 60).toFixed(2);
-          
-          speedSpan.textContent = speed;
+        if (allLapsComplete) {
+          const warningMsg = document.getElementById('time-discrepancy-warning');
+          if (!warningMsg) {
+            const warningDiv = document.createElement('div');
+            warningDiv.id = 'time-discrepancy-warning';
+            warningDiv.className = 'alert alert-warning mt-3';
+            warningDiv.innerHTML = `
+              <i class="fas fa-exclamation-triangle"></i>
+              <strong>Atención:</strong> La suma de los tiempos por vuelta 
+              (${secondsToTime(accumulatedTime)}) no coincide con el tiempo total 
+              (${totalTime}). Diferencia: ${formattedDiff}.
+            `;
+            
+            const lapTimesContainer = document.getElementById('lap-times');
+            if (lapTimesContainer) {
+              lapTimesContainer.appendChild(warningDiv);
+            }
+          }
+        }
+      } else {
+        // Eliminar advertencia si existe
+        const warningMsg = document.getElementById('time-discrepancy-warning');
+        if (warningMsg) {
+          warningMsg.remove();
         }
       }
-    };
-    
-    // Configurar event listeners para actualizar velocidad en tiempo real
-    const updateAllSpeeds = () => {
-      for (let i = 0; i < timeInputs.length; i++) {
-        calculateSpeed(i);
+    }
+  }
+
+  // Función para convertir tiempo en formato "mm:ss.cc" a segundos
+  function timeToSeconds(timeStr) {
+    if (!timeStr || timeStr === '-') return 0;
+
+    let minutes = 0, seconds = 0, centiseconds = 0;
+
+    if (timeStr.includes(':')) {
+      // Formato mm:ss.cc
+      const parts = timeStr.split(':');
+      minutes = parseInt(parts[0]) || 0;
+
+      if (parts[1].includes('.')) {
+        const secParts = parts[1].split('.');
+        seconds = parseInt(secParts[0]) || 0;
+        centiseconds = parseInt(secParts[1]) || 0;
+      } else {
+        seconds = parseInt(parts[1]) || 0;
       }
-    };
-    
-    timeInputs.forEach((input, index) => {
-      input.addEventListener('input', () => calculateSpeed(index));
-    });
-    
-    frInputs.forEach((input, index) => {
-      input.addEventListener('input', () => calculateSpeed(index));
-    });
-    
-    dpcInputs.forEach((input, index) => {
-      input.addEventListener('input', () => calculateSpeed(index));
-    });
-  }
-
-  // Event listeners para actualizaciones en tiempo real
-  document.getElementById('distance').addEventListener('change', function() {
-    generateLapTimeFields();
-    if (advancedTimeContainer.style.display !== 'none') {
-      generateAdvancedFields();
+    } else if (timeStr.includes('.')) {
+      // Formato ss.cc
+      const parts = timeStr.split('.');
+      seconds = parseInt(parts[0]) || 0;
+      centiseconds = parseInt(parts[1]) || 0;
+    } else {
+      // Solo segundos
+      seconds = parseInt(timeStr) || 0;
     }
-  });
-  
-  document.getElementById('pool_length').addEventListener('change', function() {
-    generateLapTimeFields();
-    if (advancedTimeContainer.style.display !== 'none') {
-      generateAdvancedFields();
+
+    return minutes * 60 + seconds + centiseconds / 100;
+  }
+
+  // Función para convertir segundos a formato "mm:ss.cc"
+  function secondsToTime(totalSeconds) {
+    if (isNaN(totalSeconds) || totalSeconds <= 0) return '00:00.00';
+
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    const centiseconds = Math.round((totalSeconds - Math.floor(totalSeconds)) * 100);
+
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
+  }
+
+  // Función para validar el formulario antes de enviar
+  document.getElementById('data-form').addEventListener('submit', function(e) {
+    // Validar que el tiempo total coincide aproximadamente con la suma de los tiempos por vuelta
+    const totalTime = timeInput.value;
+    
+    if (totalTime) {
+      const totalTimeSeconds = timeToSeconds(totalTime);
+      let sumLapTimes = 0;
+      let allLapsComplete = true;
+      
+      const distance = parseInt(distanceSelect.value) || 0;
+      const poolLength = parseInt(poolLengthSelect.value.replace(/[^\d]/g, '')) || 25;
+      const laps = Math.ceil(distance / poolLength);
+      
+      for (let i = 1; i <= laps; i++) {
+        const lapInput = document.getElementById(`lap_time_${i}`);
+        
+        if (!lapInput || !lapInput.value) {
+          allLapsComplete = false;
+          break;
+        }
+        
+        sumLapTimes += timeToSeconds(lapInput.value);
+      }
+      
+      if (allLapsComplete) {
+        const diff = Math.abs(totalTimeSeconds - sumLapTimes);
+        
+        // Si la diferencia es mayor a 1 segundo, pedir confirmación
+        if (diff > 1) {
+          if (!confirm(`La suma de los tiempos por vuelta (${secondsToTime(sumLapTimes)}) no coincide con el tiempo total (${totalTime}). ¿Deseas continuar de todos modos?`)) {
+            e.preventDefault();
+            return false;
+          }
+        }
+      } else {
+        // No todos los tiempos por vuelta están completos
+        if (!confirm('No has completado todos los tiempos por vuelta. ¿Deseas continuar de todos modos?')) {
+          e.preventDefault();
+          return false;
+        }
+      }
     }
+    
+    return true;
   });
 
-  // Event listeners para botones
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', function() {
-      // Volver a mostrar la selección de nivel
-      formSection.style.display = 'none';
-      levelSection.style.display = 'block';
-    });
+  // Inicializar la página
+  // Generar campos iniciales para tiempos por vuelta si estamos en la página correcta
+  if (document.querySelector('.level-selection-section')) {
+    // Si hay un parámetro 'level' en la URL, seleccionar ese nivel automáticamente
+    const urlParams = new URLSearchParams(window.location.search);
+    const levelParam = urlParams.get('level');
+    
+    if (levelParam && ['basic', 'pro', 'elite'].includes(levelParam)) {
+      selectLevel(levelParam);
+    } else {
+      // Establecer el progreso inicial
+      formProgressBar.style.width = '0%';
+      formProgressBar.setAttribute('aria-valuenow', '0');
+    }
+    
+    // Configurar toggles y checkboxes con sus event listeners
+    const autoCalculateToggle = document.getElementById('autoCalculateToggle');
+    if (autoCalculateToggle) {
+      autoCalculateToggle.addEventListener('change', function() {
+        // Implementar lógica para cálculo automático
+        if (this.checked) {
+          updateAccumulatedTime();
+        }
+      });
+    }
   }
-
-  if (backToBasicBtn) {
-    backToBasicBtn.addEventListener('click', function() {
-      // Seleccionar nivel básico
-      selectLevel('basic');
-    });
-  }
-
-  // Inicialización
-  // Generar campos iniciales para tiempos por vuelta
-  setTimeout(generateLapTimeFields, 0);
 });
 </script>
 {% endblock %}
