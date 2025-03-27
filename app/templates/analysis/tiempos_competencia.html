@@ -353,33 +353,40 @@
       });
     });
 
-    // Función para seleccionar nivel
-    function selectLevel(level) {
-      // Ocultar sección de selección de nivel
-      levelSection.style.display = 'none';
+    // Modificación de JavaScript para la página de tiempos de competencia
+// Este código reemplazará la función selectLevel original para permitir
+// todas las características sin restricciones de nivel
 
-      // Actualizar el badge de nivel seleccionado y el input hidden
-      levelBadge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
-      if (levelInput) levelInput.value = level;
-
-      // Lógica según el nivel
-      if (level === 'basic') {
-        // Mostrar formulario para nivel básico
-        formSection.style.display = 'block';
-        basicTimeContainer.style.display = 'block';
-        advancedTimeContainer.style.display = 'none';
-        eliteAnalysisContainer.style.display = 'none';
-        proLevelMessage.style.display = 'none';
-
-        // Generar campos para tiempos por vuelta
-        generateLapTimeFields();
-      } else {
-        // Para niveles Pro y Elite, mostrar mensaje de suscripción
-        formSection.style.display = 'none';
-        proLevelMessage.style.display = 'block';
-        premiumLevelSpan.textContent = level.charAt(0).toUpperCase() + level.slice(1);
-      }
-    }
+function selectLevel(level) {
+  // Ocultar sección de selección de nivel
+  levelSection.style.display = 'none';
+  
+  // Actualizar el badge de nivel seleccionado y el input hidden
+  levelBadge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+  if (levelInput) levelInput.value = level;
+  
+  // Mostrar formulario para cualquier nivel
+  formSection.style.display = 'block';
+  proLevelMessage.style.display = 'none';
+  
+  // Mostrar contenedores según el nivel seleccionado
+  if (level === 'basic') {
+    basicTimeContainer.style.display = 'block';
+    advancedTimeContainer.style.display = 'none';
+    eliteAnalysisContainer.style.display = 'none';
+  } else if (level === 'pro') {
+    basicTimeContainer.style.display = 'block';
+    advancedTimeContainer.style.display = 'block';
+    eliteAnalysisContainer.style.display = 'none';
+  } else if (level === 'elite') {
+    basicTimeContainer.style.display = 'block';
+    advancedTimeContainer.style.display = 'block';
+    eliteAnalysisContainer.style.display = 'block';
+  }
+  
+  // Generar campos para tiempos por vuelta
+  generateLapTimeFields();
+}
 
     // Generar campos de tiempo por vuelta según la distancia y longitud de piscina
     function generateLapTimeFields() {

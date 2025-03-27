@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}SWIM ANALYSIS - Registro{% endblock %}
+
+{% block content %}
+<!-- Banner pequeño para esta página -->
+<section class="page-header">
+  <div class="container">
+    <h1>Registro</h1>
+    <p>Crea tu cuenta gratuita en SWIM ANALYSIS</p>
+  </div>
+</section>
+
+<!-- Contenedor del formulario de registro -->
+<section class="register-section">
+  <div class="container">
+    <div class="register-container">
+      <div class="register-form">
+        <h2>Crea tu cuenta</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form class="register" method="POST" action="{{ url_for('auth.register') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-row">
+            <input type="text" name="first_name" placeholder="Nombre" required>
+            <input type="text" name="last_name" placeholder="Apellido" required>
+          </div>
+          <div class="form-row">
+            <input type="email" name="email" placeholder="Correo electrónico" required>
+            <input type="text" name="club_name" placeholder="Nombre del club (opcional)">
+          </div>
+          <div class="form-row">
+            <input type="password" name="password" placeholder="Escribe tu contraseña" required>
+            <input type="password" name="confirm_password" placeholder="Confirma tu contraseña" required>
+          </div>
+          <div class="form-row">
+            <select name="country">
+              <option value="">Selecciona tu País (opcional)</option>
+              <option value="Argentina">Argentina</option>
+              <option value="Bolivia">Bolivia</option>
+              <option value="Chile">Chile</option>
+              <option value="Colombia">Colombia</option>
+              <option value="Ecuador">Ecuador</option>
+              <option value="Peru">Perú</option>
+              <option value="Venezuela">Venezuela</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Crear cuenta</button>
+        </form>
+        <div class="login-footer">
+          <p>¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a></p>
+        </div>
+      </div>
+
+      <!-- Información adicional sobre la plataforma -->
+      <div class="free-trial-info">
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h3>¿Qué incluye la plataforma?</h3>
+          <ul>
+            <li>Acceso completo a todas las funcionalidades</li>
+            <li>Registro de perfiles de nadadores ilimitado</li>
+            <li>Análisis avanzado de rendimiento</li>
+            <li>Herramientas para entrenadores y nadadores</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <h3>Características destacadas</h3>
+          <ul>
+            <li>Análisis "¿Qué tal si?" para simular escenarios</li>
+            <li>Cálculo de tiempos meta y zonas de entrenamiento</li>
+            <li>Registro detallado de tiempos en competencias</li>
+            <li>Informes y estadísticas personalizadas</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -139,6 +139,54 @@
                 </div>
                 <div class="footer-links">
                     <div class="footer-column">
+                        <h5>Contacto</h5>
+                        <ul>
+                            <li><a href="mailto:info@swimanalysis.com">info@swimanalysis.com</a></li>
+                            <li><a href="tel:+34912345678">+34 912 345 678</a></li>
+                            <li>Calle del Deporte 25, Madrid</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="newsletter">
+                    <h5>Suscríbete a nuestro boletín</h5>
+                    <p>Mantente informado sobre actualizaciones y novedades.</p>
+                    <form class="newsletter-form" method="POST" action="{{ url_for('main.newsletter') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="email" name="email" placeholder="Email" required>
+                        <button type="submit" class="btn btn-primary">Suscribirse</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SWIM ANALYSIS. Todos los derechos reservados.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <!-- JavaScript personalizado -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>
+                        <h5>Servicios</h5>
+                        <ul>
+                            <li><a href="{{ url_for('analysis.tiempos_competencia') }}">Registro Tiempos</a></li>
+                            <li><a href="{{ url_for('analysis.que_tal_si') }}">¿Qué tal si?</a></li>
+                            <li><a href="{{ url_for('analysis.tiempo_meta') }}">Tiempo Meta</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
                         <h5>Navegación</h5>
                         <ul>
                             <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
@@ -147,4 +195,3 @@
                         </ul>
                     </div>
                     <div class="footer-column">
-    

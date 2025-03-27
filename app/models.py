@@ -5,7 +5,6 @@ Define las clases de modelo para SQLAlchemy.
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db
-from app.utils.security import encrypt_data, decrypt_data
 
 class User(db.Model):
     """Modelo para usuarios registrados."""
@@ -20,9 +19,6 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     last_login = db.Column(db.DateTime)
     
-    # Relaciones
-    free_trial = db.relationship('FreeTrialRegistration', backref='user', uselist=False)
-    
     def set_password(self, password):
         """Genera el hash de la contraseña para almacenamiento seguro."""
         self.password_hash = generate_password_hash(password)
@@ -33,88 +29,6 @@ class User(db.Model):
     
     def __repr__(self):
         return f'<User {self.email}>'
-
-class FreeTrialRegistration(db.Model):
-    """Modelo para registros de prueba gratuita."""
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    club_name = db.Column(db.String(100))
-    country = db.Column(db.String(50))
-    
-    # Campos encriptados para información de tarjeta de crédito
-    _card_name = db.Column('card_name', db.LargeBinary)
-    _card_number = db.Column('card_number', db.LargeBinary)
-    _card_expiry = db.Column('card_expiry', db.LargeBinary)
-    _card_cvv = db.Column('card_cvv', db.LargeBinary)
-    
-    registered_on = db.Column(db.DateTime, default=datetime.utcnow)
-    trial_end_date = db.Column(db.DateTime)
-    
-    @property
-    def card_name(self):
-        """Obtiene el nombre de la tarjeta desencriptado."""
-        if self._card_name:
-            return decrypt_data(self._card_name)
-        return None
-    
-    @card_name.setter
-    def card_name(self, value):
-        """Establece el nombre de la tarjeta encriptándolo."""
-        if value:
-            self._card_name = encrypt_data(value)
-        else:
-            self._card_name = None
-    
-    @property
-    def card_number(self):
-        """Obtiene el número de tarjeta desencriptado."""
-        if self._card_number:
-            return decrypt_data(self._card_number)
-        return None
-    
-    @card_number.setter
-    def card_number(self, value):
-        """Establece el número de tarjeta encriptándolo."""
-        if value:
-            self._card_number = encrypt_data(value)
-        else:
-            self._card_number = None
-    
-    @property
-    def card_expiry(self):
-        """Obtiene la fecha de expiración desencriptada."""
-        if self._card_expiry:
-            return decrypt_data(self._card_expiry)
-        return None
-    
-    @card_expiry.setter
-    def card_expiry(self, value):
-        """Establece la fecha de expiración encriptándola."""
-        if value:
-            self._card_expiry = encrypt_data(value)
-        else:
-            self._card_expiry = None
-    
-    @property
-    def card_cvv(self):
-        """Obtiene el CVV desencriptado."""
-        if self._card_cvv:
-            return decrypt_data(self._card_cvv)
-        return None
-    
-    @card_cvv.setter
-    def card_cvv(self, value):
-        """Establece el CVV encriptándolo."""
-        if value:
-            self._card_cvv = encrypt_data(value)
-        else:
-            self._card_cvv = None
-    
-    def __repr__(self):
-        return f'<FreeTrialRegistration {self.email}>'
 
 class ContactMessage(db.Model):
     """Modelo para mensajes de contacto."""
@@ -174,3 +88,4 @@ class Newsletter(db.Model):
     
     def __repr__(self):
         return f'<Newsletter {self.email}>'
+    
