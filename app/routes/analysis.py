@@ -3,7 +3,7 @@ Rutas para funcionalidades de análisis de natación.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.extensions import db
-from app.models import SwimTime, SwimLap
+from app.models import SwimTime, SwimLap, Swimmer  # Añadir Swimmer a las importaciones
 from app.utils.auth import login_required
 
 # Crear blueprint
@@ -33,11 +33,19 @@ def tiempo_meta():
     ]
     return render_template('analysis/tiempo_meta.html', nadadores=nadadores)
 
+# En app/routes/analysis.py, modificar la ruta tiempos_competencia:
+
 @analysis_bp.route('/tiempos_competencia')
 @login_required
 def tiempos_competencia():
     """Página de registro de tiempos de competencia."""
-    return render_template('analysis/tiempos_competencia.html')
+    # Obtener la lista de nadadores del usuario actual
+    user_id = session['user_id']
+    swimmers = Swimmer.query.filter_by(user_id=user_id).order_by(Swimmer.first_name).all()
+    
+    return render_template('analysis/tiempos_competencia.html', swimmers=swimmers)
+
+# En app/routes/analysis.py, modificar la ruta guardar_tiempos:
 
 @analysis_bp.route('/guardar_tiempos', methods=['POST'])
 @login_required
@@ -50,28 +58,36 @@ def guardar_tiempos():
     try:
         # Obtener datos del formulario
         user_id = session['user_id']
-        swimmer_name = request.form.get('swimmer_name')
+        swimmer_id = request.form.get('swimmer_id')  # Ahora usamos el ID del nadador
         competition = request.form.get('competition')
         date = request.form.get('date')
-        gender = request.form.get('gender')
         stroke = request.form.get('stroke')
         distance = int(request.form.get('distance'))
         pool_length = request.form.get('pool_length')
         time_total = request.form.get('time')
         level = request.form.get('level')
-
+        
+        # Buscar el nadador para obtener su nombre
+        swimmer = Swimmer.query.filter_by(id=swimmer_id, user_id=user_id).first()
+        if not swimmer:
+            flash("Nadador no encontrado.", "danger")
+            return redirect(url_for('analysis.tiempos_competencia'))
+        
         # Crear nuevo registro de tiempo
         swim_time = SwimTime(
             user_id=user_id,
-            swimmer_name=swimmer_name,
+            swimmer_id=swimmer_id,
+            swimmer_name=f"{swimmer.first_name} {swimmer.last_name}",  # Para compatibilidad
             competition=competition,
             date=date,
-            gender=gender,
+            gender=swimmer.gender,  # Ahora lo obtenemos del nadador
             stroke=stroke,
             distance=distance,
             pool_length=pool_length,
             time_total=time_total
         )
+        
+        # El resto del código sigue igual...
         
         db.session.add(swim_time)
         db.session.flush()  # Para obtener el ID generado

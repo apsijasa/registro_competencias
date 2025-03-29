@@ -8,6 +8,7 @@ from app.routes.auth import auth_bp
 from app.routes.main import main_bp
 from app.routes.analysis import analysis_bp
 from app.routes.api import api_bp
+from app.routes.swimmers import swimmers_bp
 
 def init_routes(app):
     """
@@ -21,3 +22,6 @@ def init_routes(app):
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(analysis_bp, url_prefix='/analysis')
     app.register_blueprint(api_bp, url_prefix='/api')
+
+    # Registrar el nuevo blueprint
+    app.register_blueprint(swimmers_bp, url_prefix='/swimmers')

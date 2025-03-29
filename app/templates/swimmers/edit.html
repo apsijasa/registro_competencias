@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}SWIM ANALYSIS - Editar Nadador{% endblock %}
+
+{% block content %}
+<!-- Banner pequeño para esta página -->
+<section class="page-header">
+  <div class="container">
+    <h1>Editar Nadador</h1>
+    <p>Actualiza los datos de tu nadador</p>
+  </div>
+</section>
+
+<!-- Contenido principal -->
+<section class="register-section">
+  <div class="container">
+    <div class="register-container">
+      <div class="register-form">
+        <h2><i class="fas fa-user-edit"></i> Editar Datos</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('swimmers.edit_swimmer', swimmer_id=swimmer.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="form-row">
+            <input type="text" name="first_name" placeholder="Nombre" value="{{ swimmer.first_name }}" required>
+            <input type="text" name="last_name" placeholder="Apellido" value="{{ swimmer.last_name }}" required>
+          </div>
+          
+          <div class="form-row">
+            <input type="email" name="email" placeholder="Correo electrónico (opcional)" value="{{ swimmer.email or '' }}">
+            <input type="date" name="birth_date" value="{{ swimmer.birth_date.strftime('%Y-%m-%d') }}" required>
+          </div>
+          
+          <div class="form-row">
+            <select name="gender" required>
+              <option value="M" {% if swimmer.gender == 'M' %}selected{% endif %}>Masculino</option>
+              <option value="F" {% if swimmer.gender == 'F' %}selected{% endif %}>Femenino</option>
+            </select>
+          </div>
+          
+          <div class="form-actions mt-4">
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+            <a href="{{ url_for('swimmers.list_swimmers') }}" class="btn btn-outline btn-block">
+              <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <div class="free-trial-info">
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-history"></i>
+          </div>
+          <h3>Historial del Nadador</h3>
+          <p>Aquí podrás ver un resumen de la actividad del nadador:</p>
+          <ul>
+            <li>Nadador: {{ swimmer.first_name }} {{ swimmer.last_name }}</li>
+            <li>Fecha de registro: {{ swimmer.created_at.strftime('%d/%m/%Y') }}</li>
+            <!-- En futuras versiones podrías agregar más estadísticas -->
+            <li>Registros de tiempos: Próximamente</li>
+            <li>Mejores marcas: Próximamente</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

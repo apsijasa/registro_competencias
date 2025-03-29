@@ -93,11 +93,22 @@
             <!-- Información general del nadador y la competencia -->
             <div class="form-grid">
               <!-- Información general -->
+              <!-- Reemplazar el campo de texto para el nombre del nadador por un selector -->
               <div class="form-field">
-                <label for="swimmer_name">
-                  <i class="fas fa-user"></i> Nombre del nadador:
+                <label for="swimmer_id">
+                  <i class="fas fa-user"></i> Nadador:
                 </label>
-                <input type="text" id="swimmer_name" name="swimmer_name" required>
+                <select id="swimmer_id" name="swimmer_id" class="form-select" required>
+                  <option value="">Selecciona un nadador</option>
+                  {% for swimmer in swimmers %}
+                  <option value="{{ swimmer.id }}">{{ swimmer.first_name }} {{ swimmer.last_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="text-end mt-2">
+                <a href="{{ url_for('swimmers.new_swimmer') }}" target="_blank" class="btn btn-sm btn-outline">
+                  <i class="fas fa-plus"></i> Nuevo nadador
+                </a>
               </div>
               <div class="form-field">
                 <label for="competition">
@@ -354,39 +365,39 @@
     });
 
     // Modificación de JavaScript para la página de tiempos de competencia
-// Este código reemplazará la función selectLevel original para permitir
-// todas las características sin restricciones de nivel
+    // Este código reemplazará la función selectLevel original para permitir
+    // todas las características sin restricciones de nivel
 
-function selectLevel(level) {
-  // Ocultar sección de selección de nivel
-  levelSection.style.display = 'none';
-  
-  // Actualizar el badge de nivel seleccionado y el input hidden
-  levelBadge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
-  if (levelInput) levelInput.value = level;
-  
-  // Mostrar formulario para cualquier nivel
-  formSection.style.display = 'block';
-  proLevelMessage.style.display = 'none';
-  
-  // Mostrar contenedores según el nivel seleccionado
-  if (level === 'basic') {
-    basicTimeContainer.style.display = 'block';
-    advancedTimeContainer.style.display = 'none';
-    eliteAnalysisContainer.style.display = 'none';
-  } else if (level === 'pro') {
-    basicTimeContainer.style.display = 'block';
-    advancedTimeContainer.style.display = 'block';
-    eliteAnalysisContainer.style.display = 'none';
-  } else if (level === 'elite') {
-    basicTimeContainer.style.display = 'block';
-    advancedTimeContainer.style.display = 'block';
-    eliteAnalysisContainer.style.display = 'block';
-  }
-  
-  // Generar campos para tiempos por vuelta
-  generateLapTimeFields();
-}
+    function selectLevel(level) {
+      // Ocultar sección de selección de nivel
+      levelSection.style.display = 'none';
+
+      // Actualizar el badge de nivel seleccionado y el input hidden
+      levelBadge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+      if (levelInput) levelInput.value = level;
+
+      // Mostrar formulario para cualquier nivel
+      formSection.style.display = 'block';
+      proLevelMessage.style.display = 'none';
+
+      // Mostrar contenedores según el nivel seleccionado
+      if (level === 'basic') {
+        basicTimeContainer.style.display = 'block';
+        advancedTimeContainer.style.display = 'none';
+        eliteAnalysisContainer.style.display = 'none';
+      } else if (level === 'pro') {
+        basicTimeContainer.style.display = 'block';
+        advancedTimeContainer.style.display = 'block';
+        eliteAnalysisContainer.style.display = 'none';
+      } else if (level === 'elite') {
+        basicTimeContainer.style.display = 'block';
+        advancedTimeContainer.style.display = 'block';
+        eliteAnalysisContainer.style.display = 'block';
+      }
+
+      // Generar campos para tiempos por vuelta
+      generateLapTimeFields();
+    }
 
     // Generar campos de tiempo por vuelta según la distancia y longitud de piscina
     function generateLapTimeFields() {

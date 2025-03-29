@@ -29,6 +29,54 @@ class User(db.Model):
     
     def __repr__(self):
         return f'<User {self.email}>'
+    
+# Modificar en app/models.py:
+
+class SwimTime(db.Model):
+    """Modelo para registrar tiempos de natación."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmer.id'), nullable=False)  # Nueva relación
+    competition = db.Column(db.String(100))
+    date = db.Column(db.Date, nullable=False)
+    stroke = db.Column(db.String(10), nullable=False)  # 'free', 'back', 'breast', 'fly', 'im'
+    distance = db.Column(db.Integer, nullable=False)   # en metros
+    pool_length = db.Column(db.String(3), nullable=False)  # '25m', '50m', '25y'
+    time_total = db.Column(db.String(10), nullable=False)  # formato 'mm:ss.cc'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Mantener el campo swimmer_name como opcional para compatibilidad con registros existentes
+    swimmer_name = db.Column(db.String(100))
+    
+    # Relaciones
+    laps = db.relationship('SwimLap', backref='swim_time', cascade='all, delete-orphan')
+    user = db.relationship('User', backref='swim_times')
+    
+# En app/models.py, añadir:
+
+class Swimmer(db.Model):
+    """Modelo para nadadores registrados por los usuarios."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120))
+    birth_date = db.Column(db.Date, nullable=False)
+    gender = db.Column(db.String(1), nullable=False)  # 'M' o 'F'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relación con el usuario (entrenador)
+    user = db.relationship('User', backref='swimmers')
+    
+    # Relación con los tiempos registrados
+    swim_times = db.relationship('SwimTime', backref='swimmer', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<Swimmer {self.first_name} {self.last_name}>'
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
 class ContactMessage(db.Model):
     """Modelo para mensajes de contacto."""
@@ -44,29 +92,28 @@ class ContactMessage(db.Model):
     def __repr__(self):
         return f'<ContactMessage {self.email}: {self.subject}>'
 
+# Modificar en app/models.py:
+
 class SwimTime(db.Model):
     """Modelo para registrar tiempos de natación."""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    swimmer_name = db.Column(db.String(100), nullable=False)
+    swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmer.id'), nullable=False)  # Nueva relación
     competition = db.Column(db.String(100))
     date = db.Column(db.Date, nullable=False)
-    gender = db.Column(db.String(1), nullable=False)  # 'M' o 'F'
     stroke = db.Column(db.String(10), nullable=False)  # 'free', 'back', 'breast', 'fly', 'im'
     distance = db.Column(db.Integer, nullable=False)   # en metros
     pool_length = db.Column(db.String(3), nullable=False)  # '25m', '50m', '25y'
     time_total = db.Column(db.String(10), nullable=False)  # formato 'mm:ss.cc'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relación con las vueltas
-    laps = db.relationship('SwimLap', backref='swim_time', cascade='all, delete-orphan')
+    # Mantener el campo swimmer_name como opcional para compatibilidad con registros existentes
+    swimmer_name = db.Column(db.String(100))
     
-    # Relación con el usuario
+    # Relaciones
+    laps = db.relationship('SwimLap', backref='swim_time', cascade='all, delete-orphan')
     user = db.relationship('User', backref='swim_times')
     
-    def __repr__(self):
-        return f'<SwimTime {self.swimmer_name}: {self.distance}m {self.stroke} - {self.time_total}>'
-
 class SwimLap(db.Model):
     """Modelo para registrar tiempos por vuelta."""
     id = db.Column(db.Integer, primary_key=True)

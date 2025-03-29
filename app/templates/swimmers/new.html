@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}SWIM ANALYSIS - Nuevo Nadador{% endblock %}
+
+{% block content %}
+<!-- Banner pequeño para esta página -->
+<section class="page-header">
+  <div class="container">
+    <h1>Nuevo Nadador</h1>
+    <p>Registra un nuevo nadador en tu equipo</p>
+  </div>
+</section>
+
+<!-- Contenido principal -->
+<section class="register-section">
+  <div class="container">
+    <div class="register-container">
+      <div class="register-form">
+        <h2><i class="fas fa-user-plus"></i> Datos del Nadador</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('swimmers.new_swimmer') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="form-row">
+            <input type="text" name="first_name" placeholder="Nombre" required>
+            <input type="text" name="last_name" placeholder="Apellido" required>
+          </div>
+          
+          <div class="form-row">
+            <input type="email" name="email" placeholder="Correo electrónico (opcional)">
+            <input type="date" name="birth_date" placeholder="Fecha de nacimiento" required>
+          </div>
+          
+          <div class="form-row">
+            <select name="gender" required>
+              <option value="">Selecciona el género</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+          
+          <div class="form-actions mt-4">
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-save"></i> Guardar Nadador
+            </button>
+            <a href="{{ url_for('swimmers.list_swimmers') }}" class="btn btn-outline btn-block">
+              <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <div class="free-trial-info">
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <h3>¿Por qué registrar nadadores?</h3>
+          <ul>
+            <li>Facilita el registro de tiempos en competencias</li>
+            <li>Mantiene un historial organizado por nadador</li>
+            <li>Permite generar análisis personalizados</li>
+            <li>Mejora la gestión de tu equipo</li>
+          </ul>
+        </div>
+        
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <h3>Consejos</h3>
+          <ul>
+            <li>Usa nombres y apellidos completos para identificar fácilmente a tus nadadores</li>
+            <li>La fecha de nacimiento es importante para análisis por categorías</li>
+            <li>El correo electrónico es opcional, pero útil para enviar informes</li>
+            <li>Puedes editar la información del nadador en cualquier momento</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
