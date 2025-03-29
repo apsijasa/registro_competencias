@@ -1,5 +1,3 @@
-# Crear un nuevo archivo app/routes/swimmers.py:
-
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.extensions import db
 from app.models import Swimmer, SwimTime
@@ -73,7 +71,7 @@ def new_swimmer():
             flash(f"Error al registrar nadador: {str(e)}", "danger")
             return redirect(url_for('swimmers.new_swimmer'))
     
-    return render_template('swimmers/edit.html', swimmer=swimmer, SwimTime=SwimTime)
+    return render_template('swimmers/new.html')
 
 @swimmers_bp.route('/nadadores/json')
 @login_required
@@ -118,7 +116,8 @@ def edit_swimmer(swimmer_id):
             db.session.rollback()
             flash(f"Error al actualizar datos: {str(e)}", "danger")
     
-    return render_template('swimmers/edit.html', swimmer=swimmer)
+    # Pasamos SwimTime al contexto de la plantilla como se sugiere en el comentario
+    return render_template('swimmers/edit.html', swimmer=swimmer, SwimTime=SwimTime)
 
 @swimmers_bp.route('/nadadores/<int:swimmer_id>/eliminar', methods=['POST'])
 @login_required
