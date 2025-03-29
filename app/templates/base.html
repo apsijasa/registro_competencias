@@ -81,9 +81,15 @@
                                 </li>
                             </ul>
                         </li>
-                        {% endif %}
-
-                        {% if is_authenticated %}
+                        
+                        <!-- Añadido: Enlace a Mis Nadadores -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'swimmers.' in request.endpoint %}active{% endif %}"
+                                href="{{ url_for('swimmers.list_swimmers') }}">
+                                <i class="fas fa-users"></i> Mis Nadadores
+                            </a>
+                        </li>
+                        
                         <!-- Opciones para usuarios autenticados -->
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('auth.logout') }}">
@@ -146,6 +152,23 @@
                             <li>Calle del Deporte 25, Madrid</li>
                         </ul>
                     </div>
+                    <div class="footer-column">
+                        <h5>Servicios</h5>
+                        <ul>
+                            <li><a href="{{ url_for('analysis.tiempos_competencia') }}">Registro Tiempos</a></li>
+                            <li><a href="{{ url_for('analysis.que_tal_si') }}">¿Qué tal si?</a></li>
+                            <li><a href="{{ url_for('analysis.tiempo_meta') }}">Tiempo Meta</a></li>
+                            <li><a href="{{ url_for('swimmers.list_swimmers') }}">Mis Nadadores</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h5>Navegación</h5>
+                        <ul>
+                            <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
+                            <li><a href="{{ url_for('auth.register') }}">Registrarse</a></li>
+                            <li><a href="{{ url_for('auth.login') }}">Iniciar Sesión</a></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="newsletter">
                     <h5>Suscríbete a nuestro boletín</h5>
@@ -179,19 +202,3 @@
 </body>
 
 </html>
-<h5>Servicios</h5>
-<ul>
-    <li><a href="{{ url_for('analysis.tiempos_competencia') }}">Registro Tiempos</a></li>
-    <li><a href="{{ url_for('analysis.que_tal_si') }}">¿Qué tal si?</a></li>
-    <li><a href="{{ url_for('analysis.tiempo_meta') }}">Tiempo Meta</a></li>
-</ul>
-</div>
-<div class="footer-column">
-    <h5>Navegación</h5>
-    <ul>
-        <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
-        <li><a href="{{ url_for('auth.register') }}">Registrarse</a></li>
-        <li><a href="{{ url_for('auth.login') }}">Iniciar Sesión</a></li>
-    </ul>
-</div>
-<div class="footer-column">
