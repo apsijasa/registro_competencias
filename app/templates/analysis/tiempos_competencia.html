@@ -105,10 +105,13 @@
                   {% endfor %}
                 </select>
               </div>
-              <div class="text-end mt-2">
-                <a href="{{ url_for('swimmers.new_swimmer') }}" target="_blank" class="btn btn-sm btn-outline">
+              <div class="text-end mt-2 d-flex justify-content-end">
+                <a href="{{ url_for('swimmers.new_swimmer') }}" target="_blank" class="btn btn-sm btn-outline me-2">
                   <i class="fas fa-plus"></i> Nuevo nadador
                 </a>
+                <button type="button" class="btn btn-sm btn-outline" onclick="refreshSwimmersList()">
+                  <i class="fas fa-sync-alt"></i> Actualizar lista
+                </button>
               </div>
               <div class="form-field">
                 <label for="competition">
@@ -330,7 +333,7 @@
 </section>
 {% endblock %}
 
-{% block extra_scripts %}
+{{% block extra_scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     // Referencias a los elementos del DOM
@@ -363,6 +366,31 @@
         selectLevel(level);
       });
     });
+
+    // Función para refrescar la lista de nadadores
+    function refreshSwimmersList() {
+      // Mostrar indicador de carga
+      const swimmerSelect = document.getElementById('swimmer_id');
+      const originalOptions = swimmerSelect.innerHTML;
+      swimmerSelect.innerHTML = '<option value="">Cargando nadadores...</option>';
+      
+      // Solicitar la lista actualizada mediante AJAX
+      fetch('{{ url_for("swimmers.get_swimmers_json") }}')
+        .then(response => response.json())
+        .then(data => {
+          // Reconstruir las opciones
+          let options = '<option value="">Selecciona un nadador</option>';
+          data.swimmers.forEach(swimmer => {
+            options += `<option value="${swimmer.id}">${swimmer.first_name} ${swimmer.last_name}</option>`;
+          });
+          swimmerSelect.innerHTML = options;
+        })
+        .catch(error => {
+          console.error('Error al actualizar lista de nadadores:', error);
+          swimmerSelect.innerHTML = originalOptions;
+          alert('Error al actualizar la lista de nadadores. Por favor, recarga la página.');
+        });
+    }
 
     // Modificación de JavaScript para la página de tiempos de competencia
     // Este código reemplazará la función selectLevel original para permitir
@@ -616,6 +644,9 @@
         }
       });
     }
+    
+    // Exponer la función refreshSwimmersList para uso global (botón de actualizar lista)
+    window.refreshSwimmersList = refreshSwimmersList;
   });
 </script>
 {% endblock %}

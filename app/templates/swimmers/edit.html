@@ -59,6 +59,45 @@
 
       <div class="free-trial-info">
         <div class="info-card">
+            <div class="info-card">
+                <div class="info-icon">
+                    <i class="fas fa-stopwatch"></i>
+                </div>
+                <h3>Tiempos registrados</h3>
+                {% if swimmer.swim_times.count() > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Competición</th>
+                                    <th>Distancia</th>
+                                    <th>Estilo</th>
+                                    <th>Tiempo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for time in swimmer.swim_times.order_by(SwimTime.date.desc()).limit(5).all() %}
+                                <tr>
+                                    <td>{{ time.date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ time.competition }}</td>
+                                    <td>{{ time.distance }}m</td>
+                                    <td>{{ time.stroke }}</td>
+                                    <td>{{ time.time_total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if swimmer.swim_times.count() > 5 %}
+                        <p class="text-center mt-2">
+                            <small>Mostrando los 5 registros más recientes</small>
+                        </p>
+                    {% endif %}
+                {% else %}
+                    <p>Este nadador aún no tiene tiempos registrados.</p>
+                {% endif %}
+            </div>
           <div class="info-icon">
             <i class="fas fa-history"></i>
           </div>

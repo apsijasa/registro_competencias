@@ -79,12 +79,6 @@
                                         href="{{ url_for('analysis.tiempo_meta') }}">
                                         <i class="fas fa-bullseye"></i> Tiempo Meta</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if 'swimmers.' in request.endpoint %}active{% endif %}"
-                                        href="{{ url_for('swimmers.list_swimmers') }}">
-                                        <i class="fas fa-users"></i> Mis Nadadores
-                                    </a>
-                                </li>
                             </ul>
                         </li>
                         {% endif %}

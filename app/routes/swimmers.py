@@ -2,9 +2,10 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.extensions import db
-from app.models import Swimmer
+from app.models import Swimmer, SwimTime
 from app.utils.auth import login_required
 from datetime import datetime
+from flask import jsonify
 
 # Crear blueprint
 swimmers_bp = Blueprint('swimmers', __name__)
@@ -33,7 +34,19 @@ def new_swimmer():
         if not (first_name and last_name and birth_date_str and gender):
             flash("Por favor, completa los campos obligatorios.", "danger")
             return redirect(url_for('swimmers.new_swimmer'))
-        
+
+        # Validar fecha de nacimiento
+        try:
+            birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+            
+            # Verificar que la fecha no sea futura
+            if birth_date > datetime.now().date():
+                flash("La fecha de nacimiento no puede ser futura.", "danger")
+                return redirect(url_for('swimmers.new_swimmer'))
+                
+        except ValueError:
+            flash("El formato de la fecha de nacimiento es incorrecto.", "danger")
+            return redirect(url_for('swimmers.new_swimmer'))
         try:
             # Convertir fecha
             birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
@@ -60,7 +73,26 @@ def new_swimmer():
             flash(f"Error al registrar nadador: {str(e)}", "danger")
             return redirect(url_for('swimmers.new_swimmer'))
     
-    return render_template('swimmers/new.html')
+    return render_template('swimmers/edit.html', swimmer=swimmer, SwimTime=SwimTime)
+
+@swimmers_bp.route('/nadadores/json')
+@login_required
+def get_swimmers_json():
+    """Devuelve la lista de nadadores en formato JSON."""
+    user_id = session['user_id']
+    swimmers = Swimmer.query.filter_by(user_id=user_id).order_by(Swimmer.first_name).all()
+    
+    # Convertir a formato JSON
+    swimmers_list = [
+        {
+            'id': swimmer.id,
+            'first_name': swimmer.first_name,
+            'last_name': swimmer.last_name
+        }
+        for swimmer in swimmers
+    ]
+    
+    return jsonify({'swimmers': swimmers_list})
 
 @swimmers_bp.route('/nadadores/<int:swimmer_id>/editar', methods=['GET', 'POST'])
 @login_required

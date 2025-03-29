@@ -105,17 +105,15 @@
 {% endblock %}
 
 {% block extra_scripts %}
-{% block extra_scripts %}
 <script>
     function confirmDelete(button) {
-  const swimmerName = button.getAttribute('data-swimmer-name');
-  const swimmerId = button.getAttribute('data-swimmer-id');
-  
-  const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-  document.getElementById('deleteModalBody').textContent = `¿Estás seguro de que deseas eliminar a ${swimmerName}?`;
-  document.getElementById('deleteForm').action = `/nadadores/${swimmerId}/eliminar`;
-  modal.show();
-}
+        const swimmerName = button.getAttribute('data-swimmer-name');
+        const swimmerId = button.getAttribute('data-swimmer-id');
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        document.getElementById('deleteModalBody').textContent = `¿Estás seguro de que deseas eliminar a ${swimmerName}?`;
+        document.getElementById('deleteForm').action = `/nadadores/${swimmerId}/eliminar`;
+        modal.show();
+    }
 </script>
-{% endblock %}
 {% endblock %}
