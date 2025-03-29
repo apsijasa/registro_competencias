@@ -54,30 +54,6 @@ class SwimTime(db.Model):
     
 # En app/models.py, añadir:
 
-class Swimmer(db.Model):
-    """Modelo para nadadores registrados por los usuarios."""
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120))
-    birth_date = db.Column(db.Date, nullable=False)
-    gender = db.Column(db.String(1), nullable=False)  # 'M' o 'F'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relación con el usuario (entrenador)
-    user = db.relationship('User', backref='swimmers')
-    
-    # Relación con los tiempos registrados
-    swim_times = db.relationship('SwimTime', backref='swimmer', lazy='dynamic')
-    
-    def __repr__(self):
-        return f'<Swimmer {self.first_name} {self.last_name}>'
-    
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
-
 class ContactMessage(db.Model):
     """Modelo para mensajes de contacto."""
     id = db.Column(db.Integer, primary_key=True)
